@@ -44,30 +44,3 @@ cp Backend/.env.example Backend/.env
 # 4. 浏览器打开
 open Site/index3d.html  # 或 Site/index.html
 ```
-
-## 核心 API
-
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| GET | `/api/papers` | 论文索引 + push_dimensions |
-| GET | `/api/papers/{paper_id}` | 单篇 q + w + 推动维度 |
-| GET | `/api/boundary-tree` | 完整 B_t 树（带 papers_introduced） |
-| GET | `/api/deltas` | 按年份分层的演化日志 |
-| POST | `/api/papers` | 上传 PDF → 端到端流水线（PyMuPDF → Claude → merge） |
-| GET | `/api/tasks/{task_id}` | 流水线进度（pending → extracting → analyzing → merging → done/failed） |
-
-## 当前进度（v1.0）
-
-- ✅ 6 篇示例论文已分析入库（TDHNN / THNN / UniG-Encoder / IMVC_HG / HyperUFG / Self-supervised KT）
-- ✅ 端到端流水线跑通（~26 秒/篇 Opus）
-- ✅ 2D + 3D 双视图，时间轴动态推导年份
-- ⚠️ 已知 bug：见 [`/Users/likun/.claude/plans/`](https://) 下的 v1.1 修复清单（路径穿越、并发竞争、API 错误处理等）
-- ⏳ v1.5 计划：tree curation 编辑面板 + merge diff 预览 + 评估闭环
-
-## 写作 / 引用
-
-如果这套 B_t 框架对你的科研工作有用，欢迎引用 `FrontierScience.md` 中描述的方法学（这是我自己整理的"科学问题 P 与科学工作 W 的跨领域论文拆解研究"框架的工程实现）。
-
----
-
-🤖 Built with [Claude Code](https://claude.com/claude-code)
