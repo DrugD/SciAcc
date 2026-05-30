@@ -1,0 +1,30 @@
+{
+  "paper_title": "UniG-Encoder: A universal feature encoder for graph and hypergraph node classification",
+  "venue": "Pattern Recognition 2024",
+  "w_summary": "作者提出 UniG-Encoder：一种对图和超图都统一适用的特征编码器。它用一个归一化投影矩阵 P=[P_V; P_E] 把“节点 ∪ 边/超边”映射到统一的投影集 P，先对节点特征 X 做正向投影 H^(0)=PX 得到节点特征与超边特征的拼接，交给一个简单 MLP（或 Transformer）做变换，再用 P^T 逆投影聚合回节点嵌入。通过调节 P_V 与 P_E 的相对权重，该框架能显式地在同质与异质场景间权衡，在 12 个超图 + 6 个图基准上超越大量专用 SOTA。",
+  "w_type": "提出新方法（通用图/超图编码器）+ 对现有范式的新理论解释（用投影双射统一谱/空间/展开各路做法）",
+  "w_object": "图和超图上的节点分类任务，覆盖同质 (Cora, CiteSeer, PubMed) 与异质 (Cornell, Texas, Wisconsin)、图和超图 (Zoo, House, Senate 等共 12 个超图基准)。",
+  "w_mechanism": "机制：(1) Forward projection 用 P=[I; P_E] 把节点特征线性组合成“边/超边特征”，与节点特征拼接得到 H^(0)∈R^{|P|×C₀}；(2) Feature transform 以 MLP（可替换为 RNN/Transformer）把 H^(0) 映射为 H^(l)；(3) Reversed projection 用 P^T 把 H^(l) 聚合回节点嵌入 Z = P^T H^(l)，用于分类；(4) P_E 中可按 1(v∈e) 或其归一化版本定义，具有显式意义，并可依据同质性先验调节；(5) UniG-Encoder II 在 H^(0) 中加入多跳/邻居增强信息。",
+  "w_evidence": [
+    "在 12 个超图数据集（含 Zoo/House/Senate 等）和 6 个图数据集（Cora/CiteSeer/PubMed/Cornell/Texas/Wisconsin）上取得整体最佳的节点分类精度；",
+    "理论 Theorem 1：构造节点与超边到投影集 P 的双射，证明投影矩阵可逆且信息无损；",
+    "对比 MLP：在同质数据上仍显著高于 MLP，说明结构有用；在异质数据上 MLP 曾超越 HGNN，但 UniG-Encoder 能同时胜过两者；",
+    "消融：展示调节 P_V 与 P_E 权重与同质性先验一致；UniG-Encoder II 的多跳加入带来进一步提升；",
+    "复杂度：使用简单 MLP 主干，计算代价远低于典型二阶段 MPNN（AllSet、UniGCNII 等），尤其在 |E|≫|V| 时。"
+  ],
+  "w_evaluation": [
+    "覆盖面：单一框架同时超越图/超图、同质/异质专用 SOTA，是对已有专项方法的一种显著概念简化；",
+    "可解释：投影矩阵内每一项含义明确（1 表示节点属于某超边），调节 P_V 与 P_E 的相对权重对应同质性/异质性偏置；",
+    "计算开销：主体是矩阵乘 + MLP，适合大 |E| 场景，避免了 message passing 的边向中间嵌入；",
+    "扩展性：把 MLP 替换为 Transformer 或 UniG-Encoder II 即可接入多跳或长程依赖；",
+    "局限：由于整体依赖线性投影，其对非常复杂的节点-超边相互作用可能不如显式消息传递细腻。"
+  ],
+  "w_scope": "适用条件：(1) 任务可归结为节点分类（或可转化为此）；(2) 数据能以节点+边/超边表示并具有合理的同质或异质先验；(3) 投影矩阵能在可接受的内存中构造（|P|=|V|+|E|）。",
+  "w_failure_scenarios": [
+    "超大规模图/超图导致 |V|+|E| 极大时，拼接后的输入与 P 矩阵都会膨胀（虽然是稀疏，但仍高于纯节点 MLP）；",
+    "超边与节点之间存在强非线性或动态交互（如时间演化）：线性投影+MLP 难以刻画；",
+    "同质性先验完全不可靠或数据集呈现复杂混合结构时，P_V/P_E 权重需手动或外部机制选择，否则性能不一定稳定；",
+    "下游不是节点分类（如图生成、link 预测）：现有形式化未覆盖；",
+    "极度稀疏的超图中 P_E 行会极其稀疏，聚合信号弱，可能不如具备注意力的 MPNN。"
+  ]
+}

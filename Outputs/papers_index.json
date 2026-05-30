@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.0",
+  "papers": [
+    {
+      "paper_id": "TDHNN",
+      "order": 1,
+      "year": 2023,
+      "title": "Totally Dynamic Hypergraph Neural Network",
+      "venue": "IJCAI-23",
+      "boundary_position": "边界迁移问题",
+      "pdf_path": "Papers/Totally Dynamic Hypergraph Neural Network.pdf",
+      "question_path": "Outputs/question/TDHNN.json",
+      "work_path": "Outputs/work/TDHNN.json",
+      "push_dimensions": {
+        "primary": [
+          "M"
+        ],
+        "secondary": [
+          "D"
+        ],
+        "summary": "主推 M_t（动态结构 + 离散采样数自适应）；次推 D_t（把 m 与 P(X_e|X_v) 抬升为学习对象）。",
+        "multi_dim_link": "双维（D-M）"
+      }
+    },
+    {
+      "paper_id": "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing",
+      "order": 6,
+      "year": 2023,
+      "title": "Self-supervised heterogeneous hypergraph network for knowledge tracing",
+      "venue": "Information Sciences 624 (2023) 200-216",
+      "boundary_position": "边界迁移问题",
+      "pdf_path": "Papers/Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing.pdf",
+      "question_path": "Outputs/question/Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing.json",
+      "work_path": "Outputs/work/Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing.json",
+      "push_dimensions": {
+        "primary": [
+          "M"
+        ],
+        "secondary": [
+          "D"
+        ],
+        "summary": "将异质超图与自监督对比学习融合用于知识追踪，扩展方法生态以应对题目高阶异质关系与交互稀疏对象。",
+        "multi_dim_link": "双维(D-M)：新方法面向稀疏异质高阶题目关系对象"
+      }
+    },
+    {
+      "paper_id": "THNN",
+      "order": 2,
+      "year": 2024,
+      "title": "Tensorized Hypergraph Neural Networks",
+      "venue": "SIAM SDM 2024",
+      "boundary_position": "边界迁移问题",
+      "pdf_path": "Papers/Tensorized Hypergraph Neural Networks.pdf",
+      "question_path": "Outputs/question/THNN.json",
+      "work_path": "Outputs/work/THNN.json",
+      "push_dimensions": {
+        "primary": [
+          "M"
+        ],
+        "secondary": [
+          "D",
+          "V"
+        ],
+        "summary": "主推 M_t（张量代数 + 对称 CP 分解进入合法工具箱）；次推 D_t（m-均匀超图）、V_t（加入「阶数表达能力」判据）。",
+        "multi_dim_link": "三维（D-M-V）"
+      }
+    },
+    {
+      "paper_id": "UniG-Encoder",
+      "order": 3,
+      "year": 2024,
+      "title": "UniG-Encoder: A universal feature encoder for graph and hypergraph node classification",
+      "venue": "Pattern Recognition 2024",
+      "boundary_position": "边界迁移问题",
+      "pdf_path": "Papers/UniG-Encoder Auniversalfeatureencoderforgraphandhypergraphnode classification.pdf",
+      "question_path": "Outputs/question/UniG-Encoder.json",
+      "work_path": "Outputs/work/UniG-Encoder.json",
+      "push_dimensions": {
+        "primary": [
+          "D",
+          "M",
+          "E",
+          "V"
+        ],
+        "secondary": [],
+        "summary": "四维全推：把「图/超图 × 同质/异质」四象限合并为同一对象域，给出统一编码器，重写跨范式联合优越的成功标准。",
+        "multi_dim_link": "四维全联动（D-M-E-V）"
+      }
+    },
+    {
+      "paper_id": "IMVC_HG",
+      "order": 4,
+      "year": 2025,
+      "title": "Incomplete multi-view clustering based on hypergraph (IMVC_HG)",
+      "venue": "Information Fusion 2025",
+      "boundary_position": "边界内问题",
+      "pdf_path": "Papers/Unifying multimodalinteractions for rumordiffusion prediction with global hypergraphmodeling.pdf",
+      "question_path": "Outputs/question/IMVC_HG.json",
+      "work_path": "Outputs/work/IMVC_HG.json",
+      "push_dimensions": {
+        "primary": [
+          "M"
+        ],
+        "secondary": [
+          "D"
+        ],
+        "summary": "主推 M_t（超图重建 + ONMF + 张量 Schatten p-范数三组件整合为一步式优化）；次推 D_t（超图作为结构先验输出到不完备多视图聚类邻域）。",
+        "multi_dim_link": "双维（D-M）"
+      }
+    },
+    {
+      "paper_id": "HyperUFG",
+      "order": 5,
+      "year": 2025,
+      "title": "When Hypergraph Meets Heterophily: New Benchmark Datasets and Baseline (HyperUFG)",
+      "venue": "AAAI-25",
+      "boundary_position": "边界外问题",
+      "pdf_path": "Papers/When Hypergraph Meets Heterophily New Benchmark Datasets and Baseline.pdf",
+      "question_path": "Outputs/question/HyperUFG.json",
+      "work_path": "Outputs/work/HyperUFG.json",
+      "push_dimensions": {
+        "primary": [
+          "D",
+          "E"
+        ],
+        "secondary": [
+          "M",
+          "V"
+        ],
+        "summary": "主推 D_t（新开异质子域 + 新度量 Hedge/Hnode）和 E_t（新基准 + MLP 强制对照）；次推 M_t（framelet 双通道）和 V_t（「≥ MLP 底线」成功规则）。",
+        "multi_dim_link": "四维全联动（D-M-E-V），以 D 与 E 最强"
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+# ===== User explicitly excluded =====
+# Keep the Papers/ folder structure (with its README) but ignore all PDFs.
+Papers/*
+!Papers/README.md
+!Papers/.gitkeep
+
+# ===== Secrets =====
+Backend/.env
+*.env.local
+*.pem
+*.key
+
+# ===== Python =====
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ===== Runtime state =====
+Outputs/.tasks/
+Outputs/.locks/
+
+# ===== Editor / OS =====
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== Claude Code local =====
+.claude/settings.local.json
+
+# ===== Node / web (just in case) =====
+node_modules/
+*.log
+npm-debug.log*

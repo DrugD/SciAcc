@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>超图领域科学边界 B_t · 3D 系统发育树</title>
+<style>
+  :root {
+    --bg: #05070d;
+    --panel: rgba(17,20,28,0.9);
+    --border: rgba(255,255,255,0.08);
+    --text: #e6e9f2;
+    --muted: #8a93a6;
+    --accent: #7aa2ff;
+    --q: #60a5fa;
+    --w: #f472b6;
+    --d: #34d399;
+    --m: #a78bfa;
+    --e: #f59e0b;
+    --v: #fb7185;
+    --inh: #545a6b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; overflow:hidden; background:var(--bg); color:var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+  #scene-container, #labels-container { position: fixed; inset: 0; }
+  #labels-container { pointer-events: none; }
+  .label-3d {
+    color: var(--text); font-size: 11px; background: rgba(11,13,18,0.7);
+    padding: 2px 6px; border-radius: 3px; border: 1px solid var(--border);
+    white-space: nowrap; pointer-events: none; transform: translate(-50%, -110%);
+    backdrop-filter: blur(4px);
+  }
+  .label-3d.dim-root { font-size: 14px; font-weight: 700; letter-spacing: 1px; padding: 3px 10px; }
+  .label-3d.axis { font-size: 12px; font-weight: 600; padding: 2px 8px; }
+  .label-3d.family { font-size: 11px; font-weight: 500; opacity: 0.92; }
+  .label-3d.leaf { font-size: 10.5px; opacity: 0.82; }
+  .label-3d.paper { font-size: 12px; font-weight: 600; color: #fff; border-color: rgba(255,255,255,0.2); }
+  .label-3d.gap { color: var(--inh); border-color: var(--inh); font-size: 10px; font-style: italic; }
+  .label-3d.hover {
+    background: rgba(11,13,18,0.96); border-color: var(--accent); color: #fff;
+    font-size: 12px; max-width: 320px; white-space: normal; transform: translate(-50%, -120%);
+    z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.6); line-height: 1.5;
+  }
+
+  #ui-panel {
+    position: fixed; top: 0; left: 0; width: 380px; max-width: 36vw; height: 100vh;
+    background: var(--panel); border-right: 1px solid var(--border);
+    padding: 18px 18px 24px; overflow-y: auto; backdrop-filter: blur(16px); z-index: 20;
+  }
+  #ui-panel h1 { margin: 0 0 2px; font-size: 17px; font-weight: 600; letter-spacing: 0.3px; }
+  #ui-panel .subtitle { color: var(--muted); font-size: 12px; line-height: 1.55; }
+  .nav-link { color: var(--accent); font-size: 12px; text-decoration: none; padding: 2px 8px; border: 1px solid var(--accent); border-radius: 3px; display: inline-block; margin-top: 6px; }
+  .nav-link:hover { background: rgba(122,162,255,0.1); }
+
+  .block { border-top: 1px solid var(--border); margin-top: 14px; padding-top: 14px; }
+  .block-title { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 8px; }
+
+  .timeline-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+  .timeline-labels span { cursor: pointer; padding: 1px 6px; border-radius: 3px; }
+  .timeline-labels span.active { color: var(--accent); background: rgba(122,162,255,0.15); }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .year-display { text-align: center; font-size: 20px; font-weight: 600; color: var(--accent); margin: 8px 0 2px; }
+  .year-stats { text-align: center; color: var(--muted); font-size: 11px; }
+
+  .toggles { display: flex; flex-direction: column; gap: 6px; }
+  .toggle {
+    padding: 6px 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03);
+    color: var(--text); border-radius: 5px; font-size: 12px; cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toggle input { accent-color: var(--accent); }
+  .toggle.q.active { border-color: var(--q); background: rgba(96,165,250,0.08); }
+  .toggle.w.active { border-color: var(--w); background: rgba(244,114,182,0.08); }
+  .toggle.gap.active { border-color: var(--inh); background: rgba(84,90,107,0.1); }
+  .toggle.axis.active { border-color: var(--accent); background: rgba(122,162,255,0.08); }
+  .toggle.labels.active { border-color: var(--accent); background: rgba(122,162,255,0.08); }
+
+  .legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #c8cedd; }
+  .swatch { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 auto; }
+  .swatch.D { background: var(--d); box-shadow: 0 0 6px var(--d); }
+  .swatch.M { background: var(--m); box-shadow: 0 0 6px var(--m); }
+  .swatch.E { background: var(--e); box-shadow: 0 0 6px var(--e); }
+  .swatch.V { background: var(--v); box-shadow: 0 0 6px var(--v); }
+  .swatch.q { background: var(--q); box-shadow: 0 0 6px var(--q); }
+  .swatch.w { background: var(--w); box-shadow: 0 0 6px var(--w); }
+  .swatch.gap { background: var(--inh); }
+
+  #detail-panel { font-size: 12.5px; line-height: 1.55; }
+  #detail-panel .empty { color: var(--muted); font-size: 12px; font-style: italic; }
+  #detail-panel .paper-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #fff; }
+  #detail-panel .paper-venue { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+  #detail-panel .qw-head { color: var(--q); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin: 10px 0 4px; padding-top: 8px; border-top: 1px dashed var(--border); }
+  #detail-panel .qw-head.w { color: var(--w); }
+  #detail-panel .kv { margin-bottom: 6px; }
+  #detail-panel .kv strong { color: var(--muted); display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 2px; font-weight: 500; }
+  #detail-panel .kv ul { padding-left: 16px; margin: 3px 0 0; }
+  #detail-panel .kv ul li { margin-bottom: 2px; color: #c8cedd; font-size: 12px; }
+  #detail-panel .path-chips { margin-bottom: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+  #detail-panel .path-chips .chip { font-size: 10px; padding: 1px 7px; border-radius: 10px; background: rgba(255,255,255,0.06); color: var(--muted); }
+
+  #hud {
+    position: fixed; bottom: 18px; right: 18px; padding: 10px 14px; font-size: 11px; color: var(--muted);
+    background: var(--panel); border: 1px solid var(--border); border-radius: 6px; backdrop-filter: blur(12px);
+    max-width: 260px; z-index: 20;
+  }
+  #hud kbd { color: var(--text); background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 3px; font-size: 10px; }
+
+  @media (max-width: 720px) {
+    #ui-panel { width: 100vw; max-width: 100vw; height: 55vh; bottom: 0; top: auto; }
+    #hud { display: none; }
+  }
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<div id="scene-container"></div>
+<div id="labels-container"></div>
+
+<aside id="ui-panel">
+  <h1>B<sub>t</sub> · 3D 系统发育树</h1>
+  <div class="subtitle">每维以 <b>正交轴 → 生态位家族 → 具体 item</b> 的树状结构生长；同一生态位的兄弟（如 MPNN 族 vs 简化主干）在**同父**下分叉，不同正交轴（如"架构范式" vs "信号滤波"）在**不同主干**上生长。空隙代表尚未探索的方向。<br>
+    <a class="nav-link" href="./index.html">← 2D 列表视图</a>
+  </div>
+
+  <div class="block">
+    <div class="block-title">时间轴 t</div>
+    <div class="timeline-labels" id="timeline-labels"></div>
+    <input type="range" id="timeline" min="0" max="0" step="1" value="0" />
+    <div class="year-display" id="year-display">—</div>
+    <div class="year-stats" id="year-stats">—</div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">显示选项</div>
+    <div class="toggles">
+      <label class="toggle q active"><input type="checkbox" id="toggle-q" checked /><span>科学问题 q 星（蓝）</span></label>
+      <label class="toggle w active"><input type="checkbox" id="toggle-w" checked /><span>科学工作 w 星（粉）</span></label>
+      <label class="toggle gap active"><input type="checkbox" id="toggle-gap" checked /><span>未探索方向（?）</span></label>
+      <label class="toggle axis active"><input type="checkbox" id="toggle-axis" checked /><span>正交轴 / 家族标签</span></label>
+      <label class="toggle labels active"><input type="checkbox" id="toggle-labels" checked /><span>叶子文字标签</span></label>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">图例</div>
+    <div class="legend">
+      <div class="legend-item"><span class="swatch D"></span>D 对象域</div>
+      <div class="legend-item"><span class="swatch M"></span>M 方法域</div>
+      <div class="legend-item"><span class="swatch E"></span>E 证据域</div>
+      <div class="legend-item"><span class="swatch V"></span>V 评价规则</div>
+      <div class="legend-item"><span class="swatch q"></span>q 科学问题</div>
+      <div class="legend-item"><span class="swatch w"></span>w 科学工作</div>
+      <div class="legend-item"><span class="swatch gap"></span>未探索</div>
+      <div class="legend-item" style="font-size:11px;color:var(--muted)">点击查看</div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">自动喂论文</div>
+    <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
+      <input type="file" id="upload-pdf" accept=".pdf" style="font-size:11px; color:var(--muted);" />
+      <button id="upload-btn" style="padding:6px 10px; background:rgba(122,162,255,0.18); color:var(--text); border:1px solid var(--border); border-radius:4px; cursor:pointer; font-size:11px;">上传并分析（端到端）</button>
+      <div id="upload-status" style="font-size:11px; color:var(--muted); min-height:14px;">就绪 · 后端 <code id="api-status">未连接</code></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title" id="detail-title">详情</div>
+    <div id="detail-panel"><div class="empty">点击球体中的 q / w 星、叶子 (leaf) 或论文节点查看详细内容。</div></div>
+  </div>
+</aside>
+
+<div id="hud">
+  <div><kbd>左键</kbd> 旋转 · <kbd>滚轮</kbd> 缩放 · <kbd>右键</kbd> 平移</div>
+  <div style="margin-top:4px;">悬停查看条目全文 · 点击打开详情</div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+// ==================== Backend-driven data /* paper-scipro-backend-wired */ ====================
+const API = window.PAPER_SCIPRO_API || 'http://127.0.0.1:8770';
+const BOUNDARY_MAP = {'边界内问题':'inside','边界迁移问题':'migrate','边界外问题':'outside'};
+const DIM_COLORS = { D: 0x34d399, M: 0xa78bfa, E: 0xf59e0b, V: 0xfb7185 };
+let PAPERS = [];
+let BT_TREE = {};
+async function loadFromBackend() {
+  const apiStatusEl = document.getElementById('api-status');
+  // Cache-busting: stamp every request so Chrome's heuristic disk cache
+  // can't hand back stale papers/boundary-tree after a new upload.
+  const bust = () => `?t=${Date.now()}`;
+  const noStore = { cache: 'no-store' };
+  try {
+    const idxRes = await fetch(`${API}/api/papers${bust()}`, noStore);
+    if (!idxRes.ok) throw new Error('papers HTTP ' + idxRes.status);
+    const idx = await idxRes.json();
+    const treeRes = await fetch(`${API}/api/boundary-tree${bust()}`, noStore);
+    if (!treeRes.ok) throw new Error('boundary-tree HTTP ' + treeRes.status);
+    const tree = await treeRes.json();
+    const details = await Promise.all(idx.papers.map(p =>
+      fetch(`${API}/api/papers/${encodeURIComponent(p.paper_id)}${bust()}`, noStore).then(r => r.json())));
+    PAPERS = details.map((d, i) => ({
+      id: d.paper_id,
+      year: d.year,
+      order: idx.papers[i].order,
+      title: d.title,
+      venue: d.venue,
+      boundary: BOUNDARY_MAP[d.boundary_position] || 'inside',
+      push_dimensions: d.push_dimensions,
+      q: d.question || {},
+      w: d.work || {}
+    }));
+    BT_TREE = tree;
+    for (const k of ['D','M','E','V']) {
+      if (BT_TREE[k] && DIM_COLORS[k]) BT_TREE[k].color = DIM_COLORS[k];
+    }
+    if (apiStatusEl) apiStatusEl.textContent = `${API} · ${PAPERS.length} 篇`;
+  } catch (e) {
+    if (apiStatusEl) { apiStatusEl.textContent = '后端无响应: ' + e.message; apiStatusEl.style.color = '#fb7185'; }
+    throw e;
+  }
+}
+await loadFromBackend();
+
+// ==================== Year axis (derived from PAPERS) ====================
+let YEARS = [];
+function setupYears() {
+  YEARS = [...new Set(PAPERS.map(p => p.year).filter(Number.isFinite))].sort((a, b) => a - b);
+  if (YEARS.length === 0) YEARS = [new Date().getFullYear()];
+  const subs = '₁₂₃₄₅₆₇₈₉';
+  document.getElementById('timeline-labels').innerHTML =
+    YEARS.map((y, i) => `<span data-year="${y}">t${subs[i] || ('('+(i+1)+')')} · ${y}</span>`).join('');
+  const slider = document.getElementById('timeline');
+  slider.min = '0';
+  slider.max = String(Math.max(0, YEARS.length - 1));
+  slider.value = slider.max;
+  document.getElementById('year-display').textContent = String(YEARS[YEARS.length - 1]);
+}
+function yearShell(y) {
+  // outer year sits slightly further out; matches the legacy 14/15/16 progression for 3-year case.
+  return 14 + Math.max(0, YEARS.indexOf(y));
+}
+function yearShift(y) {
+  // distribute years vertically with the centre at y=0; legacy 3-year case → -9,0,9
+  const idx = YEARS.indexOf(y);
+  if (idx < 0) return 0;
+  return (idx - (YEARS.length - 1) / 2) * 9;
+}
+setupYears();
+
+
+const YEAR_PALETTE_REMOVED = true; // YEARS is now declared above and populated by setupYears()
+
+// ==================== Three.js setup ====================
+const container = document.getElementById('scene-container');
+const labelsRoot = document.getElementById('labels-container');
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070d);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2500);
+camera.position.set(110, 80, 170);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+container.appendChild(renderer.domElement);
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0';
+labelRenderer.domElement.style.left = '0';
+labelRenderer.domElement.style.pointerEvents = 'none';
+labelsRoot.appendChild(labelRenderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 45;
+controls.maxDistance = 450;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.2;
+
+scene.add(new THREE.AmbientLight(0x404a60, 1.3));
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+keyLight.position.set(120, 160, 90);
+scene.add(keyLight);
+const fillLight = new THREE.PointLight(0x7aa2ff, 1.6, 400);
+fillLight.position.set(-80, 40, -100);
+scene.add(fillLight);
+
+// Core glow + outer boundary + star field ===
+const coreGroup = new THREE.Group(); scene.add(coreGroup);
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(3.5, 2),
+  new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 }));
+coreGroup.add(core);
+const coreHalo = new THREE.Mesh(new THREE.SphereGeometry(5.5, 32, 32),
+  new THREE.MeshBasicMaterial({ color: 0x7aa2ff, transparent: true, opacity: 0.18 }));
+coreGroup.add(coreHalo);
+{
+  const div = document.createElement('div'); div.className = 'label-3d dim-root'; div.textContent = '超图领域核心';
+  const lbl = new CSS2DObject(div); lbl.position.set(0, 7, 0); coreGroup.add(lbl);
+}
+scene.add(new THREE.Mesh(new THREE.IcosahedronGeometry(110, 3),
+  new THREE.MeshBasicMaterial({ color: 0x7aa2ff, transparent: true, opacity: 0.035, wireframe: true, depthWrite: false })));
+{
+  const starGeom = new THREE.BufferGeometry(); const n = 800; const pos = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const r = 260 + Math.random() * 500, t = Math.random() * 2*Math.PI, p = Math.acos(2*Math.random()-1);
+    pos[3*i] = r*Math.sin(p)*Math.cos(t); pos[3*i+1] = r*Math.sin(p)*Math.sin(t); pos[3*i+2] = r*Math.cos(p);
+  }
+  starGeom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({ size: 0.6, color: 0xffffff, transparent: true, opacity: 0.5 })));
+}
+
+// ==================== Tetrahedron trunk directions ====================
+const TETRA = {
+  D: new THREE.Vector3( 1,  1,  1).normalize(),
+  M: new THREE.Vector3( 1, -1, -1).normalize(),
+  E: new THREE.Vector3(-1,  1, -1).normalize(),
+  V: new THREE.Vector3(-1, -1,  1).normalize()
+};
+
+// ==================== Geometry helpers ====================
+function orthonormalFrame(dir) {
+  const up = new THREE.Vector3(0, 1, 0);
+  let right;
+  if (Math.abs(dir.dot(up)) > 0.95) right = new THREE.Vector3(1,0,0).cross(dir).normalize();
+  else right = up.clone().cross(dir).normalize();
+  const forward = dir.clone().cross(right).normalize();
+  return { u: right, v: forward };
+}
+
+function tubeBetween(a, b, radius, color, opacity = 0.9) {
+  const dir = b.clone().sub(a);
+  const len = dir.length();
+  const geom = new THREE.CylinderGeometry(radius, radius * 1.12, len, 8, 1, false);
+  const mat = new THREE.MeshStandardMaterial({
+    color, emissive: color, emissiveIntensity: 0.25,
+    roughness: 0.45, metalness: 0.1, transparent: true, opacity
+  });
+  const mesh = new THREE.Mesh(geom, mat);
+  mesh.position.copy(a.clone().add(b).multiplyScalar(0.5));
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+  mesh.quaternion.copy(q);
+  return mesh;
+}
+
+// ==================== Build phylogenetic tree ====================
+const treeGroup = new THREE.Group(); scene.add(treeGroup);
+const allMeshes = []; // for raycasting and control
+const allLabels = []; // CSS2DObjects: {obj, kind, dim, depth}
+
+// For each leaf / internal node we compute: path, minYear, kind
+function computeMinYear(node) {
+  if (!node.children) return node.year ?? Infinity;
+  let m = Infinity;
+  for (const c of node.children) m = Math.min(m, computeMinYear(c));
+  node._minYear = Math.min(m, node.year ?? Infinity);
+  return node._minYear;
+}
+
+// layout params
+const TRUNK_LEN = 16;             // root trunk from center
+const LEN_BY_DEPTH = [0, 13, 10, 8, 6]; // segment length by depth (1=axis, 2=family, 3=leaf, 4=sub)
+const RADIUS_BY_DEPTH = [1.0, 0.75, 0.5, 0.32, 0.22];
+const PITCH_BY_DEPTH = [0, Math.PI / 3.2, Math.PI / 4.2, Math.PI / 5.2, Math.PI / 6];
+const OPACITY_BY_DEPTH = [0.95, 0.9, 0.8, 0.7, 0.6];
+
+function layoutNode(parentPos, parentDir, node, depth, dimKey, dimColor, path = []) {
+  // Compute child direction: for the ROOT trunk, it's the tetrahedral direction (handled outside).
+  // For this call, we're given (parentPos, parentDir) = the branch arriving at this node.
+  // The node itself sits at (endPos = parentPos + parentDir * len).
+  const len = LEN_BY_DEPTH[depth] ?? 5;
+  const endPos = parentPos.clone().add(parentDir.clone().multiplyScalar(len));
+
+  const isLeaf = !node.children || node.children.length === 0;
+  const color = dimColor;
+  const opacity = OPACITY_BY_DEPTH[depth] ?? 0.5;
+  const radius = RADIUS_BY_DEPTH[depth] ?? 0.2;
+
+  // Draw tube from parentPos to endPos
+  const tube = tubeBetween(parentPos, endPos, radius, color, opacity);
+  tube.userData = { kind: 'branch', dim: dimKey, depth, minYear: computeMinYear(node) };
+  treeGroup.add(tube);
+  allMeshes.push(tube);
+
+  // Node marker + label
+  let nodeKind, labelClass, labelText, nodeSphere;
+  if (isLeaf) {
+    nodeKind = 'leaf';
+    labelClass = 'leaf';
+    labelText = node.label;
+    nodeSphere = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(1.05, 1),
+      new THREE.MeshStandardMaterial({
+        color, emissive: color, emissiveIntensity: 0.85,
+        roughness: 0.35, metalness: 0.25, transparent: true, opacity: 0.95
+      })
+    );
+    nodeSphere.position.copy(endPos);
+    nodeSphere.userData = { kind: 'leaf', dim: dimKey, label: node.label, year: node.year, path: [...path] };
+    treeGroup.add(nodeSphere);
+    allMeshes.push(nodeSphere);
+  } else {
+    // internal node: small diamond
+    nodeKind = depth === 1 ? 'axis' : 'family';
+    labelClass = depth === 1 ? 'axis' : 'family';
+    labelText = node.label;
+    nodeSphere = new THREE.Mesh(
+      new THREE.OctahedronGeometry(depth === 1 ? 1.3 : 0.9, 0),
+      new THREE.MeshStandardMaterial({
+        color, emissive: color, emissiveIntensity: 0.45,
+        roughness: 0.5, metalness: 0.2, transparent: true, opacity: 0.9
+      })
+    );
+    nodeSphere.position.copy(endPos);
+    nodeSphere.userData = { kind: nodeKind, dim: dimKey, label: node.label, year: node._minYear, path: [...path] };
+    treeGroup.add(nodeSphere);
+    allMeshes.push(nodeSphere);
+  }
+
+  // Label
+  {
+    const div = document.createElement('div');
+    div.className = `label-3d ${labelClass}`;
+    div.textContent = labelText;
+    const clr = '#' + color.toString(16).padStart(6,'0');
+    if (depth === 1) { div.style.color = clr; div.style.borderColor = clr + '88'; }
+    const lbl = new CSS2DObject(div);
+    lbl.position.copy(endPos).add(new THREE.Vector3(0, depth === 1 ? 2.8 : 1.8, 0));
+    treeGroup.add(lbl);
+    allLabels.push({ obj: lbl, kind: nodeKind, dim: dimKey, depth, minYear: computeMinYear(node), path: [...path, node.label] });
+  }
+
+  // Recurse into children — they branch off the current endPos at a cone
+  if (!isLeaf) {
+    const frame = orthonormalFrame(parentDir);
+    const n = node.children.length;
+    const pitch = PITCH_BY_DEPTH[depth + 1] ?? Math.PI / 7;
+    const phaseOffset = depth * 0.37 + (dimKey.charCodeAt(0) * 0.11);
+    node.children.forEach((child, i) => {
+      const angle = (i / Math.max(1, n)) * 2 * Math.PI + phaseOffset;
+      const childDir = parentDir.clone().multiplyScalar(Math.cos(pitch))
+        .add(frame.u.clone().multiplyScalar(Math.sin(pitch) * Math.cos(angle)))
+        .add(frame.v.clone().multiplyScalar(Math.sin(pitch) * Math.sin(angle)))
+        .normalize();
+      layoutNode(endPos, childDir, child, depth + 1, dimKey, dimColor, [...path, node.label]);
+    });
+  }
+}
+
+// Build 4 trunks
+for (const [dimKey, dir] of Object.entries(TETRA)) {
+  const dimData = BT_TREE[dimKey];
+  computeMinYear(dimData);
+
+  // root trunk: center → trunkEnd
+  const trunkEnd = dir.clone().multiplyScalar(TRUNK_LEN);
+  const trunk = tubeBetween(new THREE.Vector3(0,0,0), trunkEnd, 0.9, dimData.color, 0.95);
+  trunk.userData = { kind: 'trunk', dim: dimKey };
+  treeGroup.add(trunk); allMeshes.push(trunk);
+
+  // root label
+  const rootDiv = document.createElement('div');
+  rootDiv.className = 'label-3d dim-root';
+  rootDiv.textContent = `${dimData.code} · ${dimData.label}`;
+  rootDiv.style.color = '#' + dimData.color.toString(16).padStart(6,'0');
+  rootDiv.style.borderColor = '#' + dimData.color.toString(16).padStart(6,'0') + '88';
+  const rootLbl = new CSS2DObject(rootDiv);
+  rootLbl.position.copy(dir.clone().multiplyScalar(TRUNK_LEN + 4));
+  treeGroup.add(rootLbl);
+  allLabels.push({ obj: rootLbl, kind: 'dim-root', dim: dimKey, depth: 0, minYear: -Infinity, path: [dimData.label] });
+
+  // branch children at trunkEnd as depth=1 (axes)
+  const frame = orthonormalFrame(dir);
+  const axes = dimData.children;
+  const pitch1 = PITCH_BY_DEPTH[1];
+  axes.forEach((axisNode, i) => {
+    const angle = (i / axes.length) * 2 * Math.PI + dimKey.charCodeAt(0) * 0.2;
+    const axisDir = dir.clone().multiplyScalar(Math.cos(pitch1))
+      .add(frame.u.clone().multiplyScalar(Math.sin(pitch1) * Math.cos(angle)))
+      .add(frame.v.clone().multiplyScalar(Math.sin(pitch1) * Math.sin(angle)))
+      .normalize();
+    layoutNode(trunkEnd, axisDir, axisNode, 1, dimKey, dimData.color, [dimData.label]);
+  });
+}
+
+// ==================== Paper double-stars (q + w) ====================
+const YEAR_SHELL_REMOVED = true; // replaced by yearShell(y) declared near loadFromBackend()
+const paperGroups = [];
+PAPERS.forEach((p, idx) => {
+  const papersInYear = PAPERS.filter(x => x.year === p.year);
+  const indexInYear = papersInYear.findIndex(x => x.id === p.id);
+  const baseAngle = (indexInYear / papersInYear.length) * Math.PI * 2 + p.order * 0.7 + p.year * 0.9;
+  const yShift = yearShift(p.year);
+  const r = yearShell(p.year);
+  const centerPos = new THREE.Vector3(r * Math.cos(baseAngle), yShift, r * Math.sin(baseAngle));
+  const group = new THREE.Group(); group.position.copy(centerPos); scene.add(group);
+
+  const anchor = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 }));
+  anchor.userData = { kind: 'paper', paperId: p.id };
+  group.add(anchor); allMeshes.push(anchor);
+
+  const pdiv = document.createElement('div');
+  pdiv.className = 'label-3d paper';
+  const bc = p.boundary === 'outside' ? '#fb7185' : p.boundary === 'migrate' ? '#f59e0b' : '#34d399';
+  pdiv.innerHTML = `#${p.order} ${p.id}<br><span style="color:${bc};font-size:10px;font-weight:400;">${p.venue}</span>`;
+  const plbl = new CSS2DObject(pdiv); plbl.position.set(0, 2.8, 0); group.add(plbl);
+  allLabels.push({ obj: plbl, kind: 'paper', year: p.year });
+
+  const qMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 2),
+    new THREE.MeshStandardMaterial({ color: 0x60a5fa, emissive: 0x60a5fa, emissiveIntensity: 0.9, roughness: 0.3 }));
+  qMesh.position.set(-3, 0, 0); qMesh.userData = { kind: 'q', paperId: p.id };
+  group.add(qMesh); allMeshes.push(qMesh);
+
+  const wMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 2),
+    new THREE.MeshStandardMaterial({ color: 0xf472b6, emissive: 0xf472b6, emissiveIntensity: 0.9, roughness: 0.3 }));
+  wMesh.position.set(3, 0, 0); wMesh.userData = { kind: 'w', paperId: p.id };
+  group.add(wMesh); allMeshes.push(wMesh);
+
+  for (const [ofs, color] of [[-3, 0x60a5fa], [3, 0xf472b6]]) {
+    const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(ofs, 0, 0)]);
+    group.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.55 })));
+  }
+  // thin line to core
+  const g2 = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0).sub(centerPos), new THREE.Vector3(0,0,0)]);
+  const m2 = new THREE.LineDashedMaterial({ color: 0x7aa2ff, dashSize: 1, gapSize: 1, transparent: true, opacity: 0.3 });
+  const line2 = new THREE.Line(g2, m2); line2.computeLineDistances(); group.add(line2);
+
+  paperGroups.push({ paper: p, group, qMesh, wMesh, anchor, labelDiv: pdiv });
+});
+
+// ==================== Gap markers (unexplored directions) ====================
+const GAP_SPEC = [
+  { dir: [-1, -1, -1], hint: "? 异质 × 动态 超图" },
+  { dir: [-1,  1,  1], hint: "? 高阶 × 不完备视图" },
+  { dir: [ 1, -1,  1], hint: "? 超图因果推断" },
+  { dir: [ 1,  1, -1], hint: "? 异构多视图超图" },
+  { dir: [ 0,  1,  0], hint: "? 连续时间超图演化" },
+  { dir: [ 0, -1,  0], hint: "? 对抗鲁棒性" },
+  { dir: [ 1,  0,  0], hint: "? 超图自监督预训练" },
+  { dir: [-1,  0,  0], hint: "? 异质度量 × 高阶 CP" },
+  { dir: [ 0,  0,  1], hint: "? 量子/拓扑超图" },
+  { dir: [ 0,  0, -1], hint: "? 在线/联邦超图学习" }
+];
+const gapMeshes = [];
+GAP_SPEC.forEach((g, i) => {
+  const d = new THREE.Vector3(...g.dir).normalize();
+  const r = 55 + (i % 3) * 8;
+  const pos = d.clone().multiplyScalar(r);
+  const m = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.9, 0),
+    new THREE.MeshStandardMaterial({ color: 0x545a6b, emissive: 0x545a6b, emissiveIntensity: 0.2,
+      transparent: true, opacity: 0.5, roughness: 0.9, metalness: 0 })
+  );
+  m.position.copy(pos);
+  m.userData = { kind: 'gap', hint: g.hint };
+  scene.add(m); gapMeshes.push(m); allMeshes.push(m);
+  const div = document.createElement('div'); div.className = 'label-3d gap'; div.textContent = g.hint;
+  const lbl = new CSS2DObject(div); lbl.position.copy(pos); scene.add(lbl);
+  gapMeshes.push(lbl); allLabels.push({ obj: lbl, kind: 'gap' });
+});
+
+// ==================== State & visibility ====================
+const state = { yearIdx: Math.max(0, YEARS.length - 1), showQ: true, showW: true, showGap: true, showAxis: true, showLabels: true };
+function getActiveYear() { return YEARS[state.yearIdx]; }
+
+function nodeVisible(minYear) { return (minYear ?? -Infinity) <= getActiveYear(); }
+
+function applyVisibility() {
+  const y = getActiveYear();
+  // Tree meshes: show iff minYear <= y
+  allMeshes.forEach(m => {
+    const d = m.userData || {};
+    if (d.kind === 'branch' || d.kind === 'leaf' || d.kind === 'axis' || d.kind === 'family') {
+      const vis = nodeVisible(d.minYear ?? d.year);
+      m.visible = vis;
+      if (m.material) m.material.opacity = vis ? (OPACITY_BY_DEPTH[d.depth ?? 0] ?? 0.85) : 0;
+    } else if (d.kind === 'trunk') {
+      m.visible = true;
+    } else if (d.kind === 'gap') {
+      m.visible = state.showGap;
+      if (m.material) m.material.opacity = state.showGap ? 0.5 : 0;
+    } else if (d.kind === 'q') {
+      m.visible = state.showQ && PAPERS.find(p=>p.id===d.paperId).year <= y;
+    } else if (d.kind === 'w') {
+      m.visible = state.showW && PAPERS.find(p=>p.id===d.paperId).year <= y;
+    } else if (d.kind === 'paper') {
+      m.visible = PAPERS.find(p=>p.id===d.paperId).year <= y;
+    }
+  });
+  // Labels
+  allLabels.forEach(L => {
+    const el = L.obj.element;
+    let show = true;
+    if (L.kind === 'leaf') show = state.showLabels && nodeVisible(L.minYear);
+    else if (L.kind === 'axis') show = state.showAxis && nodeVisible(L.minYear);
+    else if (L.kind === 'family') show = state.showAxis && nodeVisible(L.minYear);
+    else if (L.kind === 'dim-root') show = state.showAxis;
+    else if (L.kind === 'gap') show = state.showGap;
+    else if (L.kind === 'paper') show = (L.year ?? -Infinity) <= y;
+    el.style.opacity = show ? '' : '0';
+  });
+  // Paper group inner elements handled via allMeshes q/w above; paper group visibility for line etc:
+  paperGroups.forEach(pg => {
+    const pv = pg.paper.year <= y;
+    pg.group.children.forEach(ch => {
+      if (ch.type === 'Line' && ch.material && !ch.userData?.kind) {
+        ch.material.opacity = pv ? 0.55 : 0.12;
+      }
+    });
+  });
+
+  // UI stats
+  document.getElementById('year-display').textContent = y;
+  const published = PAPERS.filter(p => p.year <= y).length;
+  const newly = PAPERS.filter(p => p.year === y).length;
+  let leafCount = 0, newLeafCount = 0;
+  allMeshes.forEach(m => {
+    if (m.userData?.kind === 'leaf') {
+      const yr = m.userData.year;
+      if (yr <= y) leafCount++;
+      if (yr === y) newLeafCount++;
+    }
+  });
+  document.getElementById('year-stats').innerHTML =
+    `B<sub>${state.yearIdx + 1}</sub> · 论文 <strong>${published}</strong>/${PAPERS.length} · 叶子 <strong>${leafCount}</strong> (本 t 新增 ${newLeafCount})`;
+  document.querySelectorAll('.timeline-labels span').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.year) === y);
+  });
+}
+
+// ==================== Interaction ====================
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let hoverLabelObj = null;
+
+window.addEventListener('pointermove', e => {
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+});
+
+function pickIntersect() {
+  raycaster.setFromCamera(pointer, camera);
+  const targets = allMeshes.filter(m => m.visible);
+  return raycaster.intersectObjects(targets, false);
+}
+
+window.addEventListener('click', () => {
+  const hits = pickIntersect();
+  if (!hits.length) return;
+  const obj = hits[0].object;
+  const d = obj.userData;
+  if (!d) return;
+  if (d.kind === 'paper' || d.kind === 'q' || d.kind === 'w') {
+    const p = PAPERS.find(x => x.id === d.paperId);
+    if (p) renderDetail(p, d.kind);
+  } else if (d.kind === 'leaf') {
+    renderLeafDetail(d);
+  } else if (d.kind === 'axis' || d.kind === 'family') {
+    renderInternalDetail(d);
+  } else if (d.kind === 'gap') {
+    renderGapDetail(d);
+  }
+});
+
+function hideHover() { if (hoverLabelObj) { scene.remove(hoverLabelObj); hoverLabelObj = null; } }
+function renderer_set_cursor(c) { renderer.domElement.style.cursor = c; }
+
+function updateHover() {
+  const hits = pickIntersect();
+  hideHover();
+  if (!hits.length) { renderer_set_cursor('default'); return; }
+  const obj = hits[0].object; const d = obj.userData; if (!d) return;
+  let txt = "";
+  const c = (hex) => '#' + hex.toString(16).padStart(6,'0');
+  if (d.kind === 'leaf') {
+    const dimInfo = BT_TREE[d.dim];
+    txt = `<strong style="color:${c(dimInfo.color)}">${dimInfo.code} 叶子</strong> · ${d.year}<br>
+      <div style="color:var(--muted);font-size:10px;margin-top:3px;">${d.path.join(' / ')}</div>
+      <div style="margin-top:3px;">${d.label}</div>`;
+  } else if (d.kind === 'axis' || d.kind === 'family') {
+    const dimInfo = BT_TREE[d.dim];
+    txt = `<strong style="color:${c(dimInfo.color)}">${d.kind==='axis'?'正交轴':'生态位家族'}</strong>
+      <div style="color:var(--muted);font-size:10px;margin-top:3px;">${(d.path||[]).join(' / ')}</div>
+      <div style="margin-top:3px;">${d.label}</div>`;
+  } else if (d.kind === 'gap') {
+    txt = `<span style="color:var(--muted)">未探索方向</span><br>${d.hint}`;
+  } else if (d.kind === 'paper') {
+    const p = PAPERS.find(x=>x.id===d.paperId);
+    txt = `<strong>#${p.order} ${p.id}</strong><br>${p.title}<br><span style="color:var(--muted);font-size:10px;">${p.venue}</span>`;
+  } else if (d.kind === 'q') {
+    const p = PAPERS.find(x=>x.id===d.paperId);
+    txt = `<strong style="color:var(--q)">q · ${p.id}</strong><br>${p.q.q_main}`;
+  } else if (d.kind === 'w') {
+    const p = PAPERS.find(x=>x.id===d.paperId);
+    txt = `<strong style="color:var(--w)">w · ${p.id}</strong><br>${p.w.w_summary}`;
+  }
+  if (!txt) return;
+  const div = document.createElement('div'); div.className = 'label-3d hover'; div.innerHTML = txt;
+  const lbl = new CSS2DObject(div);
+  const world = new THREE.Vector3(); obj.getWorldPosition(world);
+  lbl.position.copy(world);
+  scene.add(lbl); hoverLabelObj = lbl;
+  renderer_set_cursor('pointer');
+}
+
+function renderDetail(p, focus) {
+  const box = document.getElementById('detail-panel');
+  const title = document.getElementById('detail-title');
+  const bc = p.boundary === 'outside' ? '#fb7185' : p.boundary === 'migrate' ? '#f59e0b' : '#34d399';
+  title.textContent = `#${p.order} · ${p.id}`;
+  const qSec = (!state.showQ) ? '' : `
+    <div class="qw-head">科学问题 q ${focus==='q'?'· 聚焦':''}</div>
+    <div class="kv"><strong>q_main</strong>${p.q.q_main}</div>
+    <div class="kv"><strong>q_formal</strong>${p.q.q_formal}</div>
+    <div class="kv"><strong>q_background</strong>${p.q.q_background}</div>
+    <div class="kv"><strong>边界位置</strong><span style="color:${bc}">${p.q.q_boundary_position}</span></div>
+    <div class="kv"><strong>required_evidence</strong><ul>${p.q.required_evidence.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="kv"><strong>required_evaluation</strong><ul>${p.q.required_evaluation.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  const wSec = (!state.showW) ? '' : `
+    <div class="qw-head w">科学工作 w ${focus==='w'?'· 聚焦':''}</div>
+    <div class="kv"><strong>w_summary</strong>${p.w.w_summary}</div>
+    <div class="kv"><strong>w_type</strong>${p.w.w_type}</div>
+    <div class="kv"><strong>w_object</strong>${p.w.w_object}</div>
+    <div class="kv"><strong>w_mechanism</strong>${p.w.w_mechanism}</div>
+    <div class="kv"><strong>w_evidence</strong><ul>${p.w.w_evidence.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="kv"><strong>w_evaluation</strong><ul>${p.w.w_evaluation.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="kv"><strong>w_scope</strong>${p.w.w_scope}</div>
+    <div class="kv"><strong>w_failure_scenarios</strong><ul>${p.w.w_failure_scenarios.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  box.innerHTML = `<div class="paper-title">${p.title}</div><div class="paper-venue">${p.venue} · ${p.year}</div>${qSec}${wSec}`;
+}
+
+function renderLeafDetail(d) {
+  const box = document.getElementById('detail-panel');
+  const title = document.getElementById('detail-title');
+  const dimInfo = BT_TREE[d.dim];
+  title.textContent = `${dimInfo.code} · ${dimInfo.label} · 叶子`;
+  const chips = (d.path || []).map(p => `<span class="chip">${p}</span>`).join('') + `<span class="chip" style="color:#${dimInfo.color.toString(16).padStart(6,'0')}">${d.label}</span>`;
+  box.innerHTML = `
+    <div class="path-chips">${chips}</div>
+    <div class="paper-venue">在 B<sub>${YEARS.indexOf(d.year)+1}</sub> = ${d.year} 被纳入</div>
+    <div class="kv" style="margin-top:10px;"><strong>Item</strong>${d.label}</div>
+    <div class="kv"><strong>B_t 中的位置</strong>${dimInfo.label} / ${(d.path||[]).slice(1).join(' / ')}</div>
+    <div class="kv"><strong>语义</strong>这是一个具体条目，挂在上面路径所示的生态位家族下。它的兄弟（同父子节点）是同一生态位的其它可替代选项。</div>`;
+}
+
+function renderInternalDetail(d) {
+  const box = document.getElementById('detail-panel');
+  const title = document.getElementById('detail-title');
+  const dimInfo = BT_TREE[d.dim];
+  title.textContent = `${dimInfo.code} · ${d.kind === 'axis' ? '正交轴' : '生态位家族'}`;
+  const chips = (d.path || []).map(p => `<span class="chip">${p}</span>`).join('') + `<span class="chip" style="color:#${dimInfo.color.toString(16).padStart(6,'0')}">${d.label}</span>`;
+  const kindText = d.kind === 'axis' ?
+    '这是该维度下的一条独立轴。它与兄弟轴 (同级正交轴) 在定义上互不包含。' :
+    '这是一个生态位家族。家族下面的子节点是同一生态位的可替代/可扩展选项（A 替代 B / A 扩展 B 等关系）。';
+  box.innerHTML = `
+    <div class="path-chips">${chips}</div>
+    <div class="paper-venue">最早进入 B_t 的时间：${d.year}</div>
+    <div class="kv" style="margin-top:10px;"><strong>节点类型</strong>${d.kind === 'axis' ? '正交轴 (orthogonal axis)' : '生态位家族 (niche family)'}</div>
+    <div class="kv"><strong>含义</strong>${kindText}</div>`;
+}
+
+function renderGapDetail(d) {
+  const box = document.getElementById('detail-panel');
+  const title = document.getElementById('detail-title');
+  title.textContent = '未探索方向 · B_t 的负空间';
+  box.innerHTML = `
+    <div class="paper-venue">空隙 = 尚未长出枝桠的方位</div>
+    <div class="kv" style="margin-top:10px;"><strong>方向提示</strong>${d.hint}</div>
+    <div class="kv"><strong>含义</strong>当前 5 篇工作构成的 B_t 并未覆盖这一方向——可视为未来工作的潜在空间。</div>`;
+}
+
+// ==================== Events ====================
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  labelRenderer.setSize(window.innerWidth, window.innerHeight);
+});
+document.getElementById('timeline').addEventListener('input', e => {
+  state.yearIdx = parseInt(e.target.value); applyVisibility();
+});
+document.querySelectorAll('.timeline-labels span').forEach(el => {
+  el.addEventListener('click', () => {
+    const y = parseInt(el.dataset.year);
+    state.yearIdx = YEARS.indexOf(y);
+    document.getElementById('timeline').value = state.yearIdx;
+    applyVisibility();
+  });
+});
+function bindToggle(id, key) {
+  document.getElementById(id).addEventListener('change', e => {
+    state[key] = e.target.checked;
+    e.target.closest('.toggle').classList.toggle('active', state[key]);
+    applyVisibility();
+  });
+}
+bindToggle('toggle-q', 'showQ');
+bindToggle('toggle-w', 'showW');
+bindToggle('toggle-gap', 'showGap');
+bindToggle('toggle-axis', 'showAxis');
+bindToggle('toggle-labels', 'showLabels');
+
+// ==================== Animation ====================
+const clock = new THREE.Clock();
+const leafMeshes = allMeshes.filter(m => m.userData?.kind === 'leaf');
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  core.scale.setScalar(1 + 0.08 * Math.sin(t * 2));
+  coreHalo.scale.setScalar(1 + 0.15 * Math.sin(t * 1.4));
+  leafMeshes.forEach((l, i) => {
+    if (!l.visible) return;
+    const ph = (t * 1.4 + i * 0.6) % (Math.PI * 2);
+    l.material.emissiveIntensity = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(ph));
+  });
+  paperGroups.forEach((pg, i) => {
+    pg.qMesh.material.emissiveIntensity = 0.7 + 0.35 * Math.sin(t * 2.2 + i);
+    pg.wMesh.material.emissiveIntensity = 0.7 + 0.35 * Math.sin(t * 2.2 + i + Math.PI);
+  });
+  controls.update();
+  updateHover();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+
+applyVisibility();
+animate();
+
+// ==================== Upload-paper handler (auto-feed) ====================
+(() => {
+  const btn = document.getElementById('upload-btn');
+  const fileEl = document.getElementById('upload-pdf');
+  const status = document.getElementById('upload-status');
+  if (!btn || !fileEl) return;
+  btn.addEventListener('click', async () => {
+    if (!fileEl.files || !fileEl.files.length) {
+      status.textContent = '请先选择 PDF';
+      return;
+    }
+    const f = fileEl.files[0];
+    btn.disabled = true;
+    status.textContent = '上传中...';
+    const fd = new FormData();
+    fd.append('pdf', f);
+    let res;
+    try {
+      res = await fetch(`${API}/api/papers`, { method: 'POST', body: fd });
+    } catch (e) { status.textContent = '上传失败: ' + e.message; btn.disabled = false; return; }
+    if (!res.ok) { status.textContent = '上传失败 HTTP ' + res.status; btn.disabled = false; return; }
+    const { task_id, paper_id } = await res.json();
+    status.textContent = `任务 ${task_id} 启动 · ${paper_id}`;
+    while (true) {
+      await new Promise(s => setTimeout(s, 2500));
+      const t = await fetch(`${API}/api/tasks/${task_id}`).then(r => r.json()).catch(() => null);
+      if (!t) { status.textContent = '查询任务失败'; break; }
+      status.textContent = `${t.status} · ${t.step}`;
+      if (t.status === 'done') {
+        status.textContent = '完成 · 重新加载...';
+        setTimeout(() => location.reload(), 800);
+        break;
+      }
+      if (t.status === 'failed') {
+        const head = (t.error || '').split('\n')[0];
+        status.textContent = '失败: ' + head;
+        btn.disabled = false;
+        break;
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>

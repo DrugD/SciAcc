@@ -1,0 +1,967 @@
+{
+  "2023": [
+    {
+      "dim": "D",
+      "path": [
+        "下游任务"
+      ],
+      "item": "节点 / 物体分类",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "同质性谱"
+      ],
+      "item": "同质超图 (默认假设)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "数据完备性"
+      ],
+      "item": "单视图 · 完备",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "现象 / 设定"
+      ],
+      "item": "\"初始 H 不可信\" 设定",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "超图结构类型"
+      ],
+      "item": "动态超图 (H 可学)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "超图结构类型"
+      ],
+      "item": "静态超图 (V, E, H 给定)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "可复现与可检验"
+      ],
+      "item": "组件级 ablation",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "可复现与可检验"
+      ],
+      "item": "超参灵敏度 (m, K, p, β, γ)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "基准与度量作为证据"
+      ],
+      "item": "继承基准 (Cora/ModelNet40/NTU/CiteSeer/…)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "实证证据"
+      ],
+      "item": "真实基准精度 mean ± std",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "鲁棒性证据"
+      ],
+      "item": "低训练比例扫描 (2%–44%)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "信号与滤波设计"
+      ],
+      "item": "单一低通 (默认 HGNN 卷积)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "两阶段 MPNN (node↔edge↔node)"
+      ],
+      "item": "HGNN / HGNN+",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "两阶段 MPNN (node↔edge↔node)"
+      ],
+      "item": "HNHN",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "两阶段 MPNN (node↔edge↔node)"
+      ],
+      "item": "HyperGCN",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "注意力机制"
+      ],
+      "item": "Transformer 风格双向 top-k 注意力",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "约束与正则"
+      ],
+      "item": "无监督 L_u (同超边节点→相似特征)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "约束与正则"
+      ],
+      "item": "监督 L_s (同类节点→同超边)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "结构学习策略",
+        "动态 H (可学)"
+      ],
+      "item": "Reparameterized 超边采样",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "结构学习策略",
+        "动态 H (可学)"
+      ],
+      "item": "超边数量自适应 · 饱和率 S_H",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "结构学习策略",
+        "动态 H (可学)"
+      ],
+      "item": "连接权重重排 (经典 DHGNN 做法)",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "精度性评价"
+      ],
+      "item": "≥ 2 代表基准超 SOTA",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "结构性评价"
+      ],
+      "item": "组件消融不可或缺",
+      "op": "add",
+      "papers": [
+        "TDHNN"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "对象域",
+        "超图结构类型"
+      ],
+      "item": "异质超图 (多类型属性作超边)",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "对象域",
+        "下游任务"
+      ],
+      "item": "知识追踪 / 学生作答序列预测",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "对象域",
+        "数据完备性"
+      ],
+      "item": "稀疏交互记录 (cold-start / long-tail)",
+      "op": "add",
+      "sibling_of": "多视图 · 随机缺失",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "对象域",
+        "现象 / 设定"
+      ],
+      "item": "异质属性 + 高阶集合关系并存",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "方法域",
+        "架构范式"
+      ],
+      "item": "异质超图范式 (元路径子图 + 双层注意力)",
+      "op": "add",
+      "sibling_of": "投影展开范式",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "方法域",
+        "架构范式",
+        "异质超图范式 (元路径子图 + 双层注意力)"
+      ],
+      "item": "Intra-graph attention (节点↔超边, 投影函数 f(·))",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "方法域",
+        "架构范式",
+        "异质超图范式 (元路径子图 + 双层注意力)"
+      ],
+      "item": "Inter-graph attention (子图语义池化融合)",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "方法域",
+        "结构学习策略",
+        "动态 H (可学)"
+      ],
+      "item": "自适应拓扑增强 dropout (节点重要性驱动)",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "方法域"
+      ],
+      "item": "自监督对比学习",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "方法域",
+        "自监督对比学习"
+      ],
+      "item": "InfoNCE + 同超边共现负样本选择",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "方法域",
+        "自监督对比学习"
+      ],
+      "item": "多任务联合优化 (L_main + λ L_ssl)",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "证据域",
+        "鲁棒性证据"
+      ],
+      "item": "训练比例稀疏扫描 (20%/40%/60%)",
+      "op": "add",
+      "sibling_of": "低训练比例扫描 (2%–44%)",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "证据域",
+        "可复现与可检验"
+      ],
+      "item": "嵌入 t-SNE 可视化 (语义聚类可分性)",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "证据域",
+        "实证证据"
+      ],
+      "item": "上游表示模块 × 多下游序列模型兼容性证据",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "评价规则",
+        "精度性评价"
+      ],
+      "item": "稀疏场景下相对增益放大",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "评价规则",
+        "结构性评价"
+      ],
+      "item": "上游模块通用性 (跨下游网络一致提升)",
+      "op": "add",
+      "papers": [
+        "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+      ]
+    }
+  ],
+  "2024": [
+    {
+      "dim": "D",
+      "path": [
+        "现象 / 设定"
+      ],
+      "item": "\"MLP 能超 HGNN\" 现象",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "超图结构类型"
+      ],
+      "item": "m-均匀超图 (m 阶邻接张量 A^(m))",
+      "op": "add",
+      "papers": [
+        "THNN"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "超图结构类型"
+      ],
+      "item": "图 ∪ 超图 · 统一对象空间",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "实证证据"
+      ],
+      "item": "大规模统一比较 (18+ 基准)",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "实证证据",
+        "受控合成探针"
+      ],
+      "item": "k-uniform (k=2..5) 阶数扫描",
+      "op": "add",
+      "papers": [
+        "THNN"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "理论证据"
+      ],
+      "item": "双射构造 (UniG Theorem 1)",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "理论证据",
+        "退化一致性"
+      ],
+      "item": "THNN ⊃ HGNN (2 阶特例)",
+      "op": "add",
+      "papers": [
+        "THNN"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "鲁棒性证据"
+      ],
+      "item": "跨 regime 稳定性",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "两阶段 MPNN (node↔edge↔node)"
+      ],
+      "item": "UniGNN 族 (UniGCN/UniGAT/UniSAGE/UniGCNII)",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "张量代数范式"
+      ],
+      "item": "m 阶多项式回归视角 (HGNN = 2 阶特例)",
+      "op": "add",
+      "papers": [
+        "THNN"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "张量代数范式"
+      ],
+      "item": "m 阶邻接张量的对称 CP 分解",
+      "op": "sibling-of",
+      "papers": [
+        "THNN"
+      ],
+      "sibling_of": "HGNN / HGNN+"
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "投影展开范式"
+      ],
+      "item": "P^T 反投影聚合",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "投影展开范式"
+      ],
+      "item": "可学习 Line / Star 展开",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "投影展开范式"
+      ],
+      "item": "归一化投影矩阵 P = [P_V; P_E]",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "简化主干范式 (替代两阶段 MPNN)"
+      ],
+      "item": "Transformer 主干",
+      "op": "sibling-of",
+      "papers": [
+        "UniG-Encoder"
+      ],
+      "sibling_of": "HGNN / HGNN+"
+    },
+    {
+      "dim": "M",
+      "path": [
+        "架构范式",
+        "简化主干范式 (替代两阶段 MPNN)"
+      ],
+      "item": "纯 MLP 主干",
+      "op": "sibling-of",
+      "papers": [
+        "UniG-Encoder"
+      ],
+      "sibling_of": "HGNN / HGNN+"
+    },
+    {
+      "dim": "M",
+      "path": [
+        "结构学习策略"
+      ],
+      "item": "静态 H (给定)",
+      "op": "add",
+      "papers": [
+        "THNN",
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "工程性评价"
+      ],
+      "item": "|E| ≫ |V| 计算友好",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "工程性评价"
+      ],
+      "item": "简洁 / 可解释",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "理论性评价"
+      ],
+      "item": "可退化到已有特例 (概念一致性)",
+      "op": "add",
+      "papers": [
+        "THNN"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "理论性评价"
+      ],
+      "item": "统一性理论本身构成贡献",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "精度性评价"
+      ],
+      "item": "跨 regime 稳定性 > 单基准登顶",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "结构性评价"
+      ],
+      "item": "对抗 MLP baseline 不应被超越",
+      "op": "add",
+      "papers": [
+        "UniG-Encoder"
+      ]
+    }
+  ],
+  "2025": [
+    {
+      "dim": "D",
+      "path": [
+        "下游任务"
+      ],
+      "item": "缺失视图重建",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "下游任务"
+      ],
+      "item": "聚类",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "同质性谱"
+      ],
+      "item": "异质超图 (HHL)",
+      "op": "sibling-of",
+      "papers": [
+        "HyperUFG"
+      ],
+      "sibling_of": "同质超图 (默认假设)"
+    },
+    {
+      "dim": "D",
+      "path": [
+        "同质性谱",
+        "异质超图 (HHL)"
+      ],
+      "item": "连续同质率 Hedge / Hnode",
+      "op": "add",
+      "papers": [
+        "HyperUFG"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "数据完备性"
+      ],
+      "item": "多视图 · 随机缺失",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "D",
+      "path": [
+        "现象 / 设定"
+      ],
+      "item": "超图作为 \"缺失重建工具\"",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "可复现与可检验"
+      ],
+      "item": "公开 Repository + 数据",
+      "op": "add",
+      "papers": [
+        "HyperUFG"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "基准与度量作为证据"
+      ],
+      "item": "新基准 HHL 集",
+      "op": "add",
+      "papers": [
+        "HyperUFG"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "基准与度量作为证据"
+      ],
+      "item": "新度量 Hedge / Hnode",
+      "op": "add",
+      "papers": [
+        "HyperUFG"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "实证证据",
+        "受控合成探针"
+      ],
+      "item": "同质率扫描",
+      "op": "add",
+      "papers": [
+        "HyperUFG"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "理论证据"
+      ],
+      "item": "等价性推导 (ONMF ≡ K-means)",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "理论证据",
+        "退化一致性"
+      ],
+      "item": "2-uniform 度量 ⊃ 经典图同质率",
+      "op": "add",
+      "papers": [
+        "HyperUFG"
+      ]
+    },
+    {
+      "dim": "E",
+      "path": [
+        "鲁棒性证据"
+      ],
+      "item": "不完备率扫描",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "信号与滤波设计"
+      ],
+      "item": "低通 + 高通双通道 · Framelet",
+      "op": "sibling-of",
+      "papers": [
+        "HyperUFG"
+      ],
+      "sibling_of": "单一低通 (默认 HGNN 卷积)"
+    },
+    {
+      "dim": "M",
+      "path": [
+        "约束与正则"
+      ],
+      "item": "张量低秩约束 · Schatten p-范数",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "联合优化 · 外部目标驱动"
+      ],
+      "item": "ONMF ≡ K-means 联合优化",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "联合优化 · 外部目标驱动"
+      ],
+      "item": "外部任务目标 (聚类/重建) 驱动的超图学习",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "M",
+      "path": [
+        "联合优化 · 外部目标驱动"
+      ],
+      "item": "超图 Laplacian 引导的缺失重建",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "工程性评价"
+      ],
+      "item": "端任务评价 > 中间指标",
+      "op": "add",
+      "papers": [
+        "IMVC_HG"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "范式性评价"
+      ],
+      "item": "Baseline 定位合法",
+      "op": "add",
+      "papers": [
+        "HyperUFG"
+      ]
+    },
+    {
+      "dim": "V",
+      "path": [
+        "范式性评价"
+      ],
+      "item": "新问题 + 新度量 + 新基准 + baseline 即完整贡献",
+      "op": "add",
+      "papers": [
+        "HyperUFG"
+      ]
+    }
+  ]
+}

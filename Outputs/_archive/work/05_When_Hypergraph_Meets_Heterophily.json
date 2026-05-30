@@ -1,0 +1,30 @@
+{
+  "paper_title": "When Hypergraph Meets Heterophily: New Benchmark Datasets and Baseline (HyperUFG)",
+  "venue": "AAAI-25",
+  "w_summary": "这项工作在异质超图学习 (HHL) 上同时推进三件事：(1) 提出两种超图同质率度量（Hedge 基于超边内同类节点对比例、Hnode 基于节点所在所有超边的平均同类率），并证明在 2-uniform 退化时与经典图同质率一致；(2) 构建覆盖多应用场景、具有不同同质率的异质超图基准集；(3) 提出基于 framelet 的 HyperUFG 作为新基线，将低通与高通滤波结合以同时处理同质与异质超图。通过合成与真实数据实验验证了现有 HNN 在异质情境下的不足，以及 HyperUFG 的优势。",
+  "w_type": "综合性贡献：同时提出新度量 (redefine problem)、构建新数据集 (new benchmark)、提出新基线方法 (new model)。",
+  "w_object": "超图上节点分类任务，重点是异质超图（heterophilic hypergraph）；研究对象还包括用于对比的合成同质/异质超图以及跨领域（引文、购物、电影、社交等）的真实超图。",
+  "w_mechanism": "机制：(1) 度量——Hedge: 对每条超边 e_j，统计其内部同类节点对比例并取平均；Hnode: 对每个节点 v，在所有包含它的超边上取同类节点比例的均值；(2) 数据——基于真实世界语义（如共引与跨学科、共购与不同消费者群体等）的组合，构建覆盖低到高同质率的多个异质超图；(3) 方法 HyperUFG——基于 framelet transform 构造一组低通+高通滤波器，分别捕获同质信号（平滑）与异质信号（高频/对比），并在超图卷积中融合两类滤波器输出；(4) 同时给出理论/实证说明 framelet 的低/高通组合可缓解单一低通 HNN 的 oversmoothing 与同质性偏置。",
+  "w_evidence": [
+    "图 1 的合成数据观察：在同质率 ≤0.5 时 MLP 明显超过 HGNN / HyperGCN / UniGCN / UniGAT / UniSAGE / UniGCNII；同质率 >0.6 时 HNN 反超；",
+    "度量对 2-uniform 超图退化实验：Hedge/Hnode 与经典 edge/node homophily 一致，验证了定义的合理性；",
+    "多基准对比：在新建的异质超图基准上，HyperUFG 对比 8 类 HNN 基线在多数据集上取得优势；同质基准上也保持竞争力；",
+    "消融：分别去掉低通或高通 framelet 成分，性能下降，尤其在异质集合；",
+    "HHL Repository 与 Appendix 提供可复现数据与实现。"
+  ],
+  "w_evaluation": [
+    "度量层面：首次从超边与超节点两个视角给出能处理任意阶超边的同质率定义，解决了以往用 CE-homophily 二阶近似的失真；",
+    "数据层面：补上了 HHL 长期缺失的“多样化、真实、大规模”异质基准，和 GNN 异质图基准形成对照；",
+    "方法层面：HyperUFG 用 framelet 的低/高通组合给出同时适配同质与异质超图的单一基线，简单但有效；",
+    "综合评价：三位一体的贡献让未来工作可以直接使用度量-数据-模型的配套组件推进 HHL；",
+    "局限：HyperUFG 仍是“baseline 定位”，并非旨在成为 SOTA，未来方法应在同基准上继续探索。"
+  ],
+  "w_scope": "适用条件：(1) 数据集存在可区分的标签语义，能支持同质率定义；(2) 超图规模可接受 framelet 分解的计算；(3) 下游任务是节点分类。度量与数据集对方法-不可知的研究都适用。",
+  "w_failure_scenarios": [
+    "节点类别标签缺失或噪声严重：Hedge/Hnode 直接失真，度量不可靠；",
+    "超图极度稠密或超边极大：framelet 滤波的计算与参数量开销上升；",
+    "同质率本身动态变化（如时间演化超图）：单一同质率度量不足以描述；",
+    "异质信号与高频噪声混淆时：高通滤波会同时放大噪声；",
+    "HyperUFG 仅作为 baseline：在同质强且任务简单的数据上可能不及针对性设计的 HNN。"
+  ]
+}

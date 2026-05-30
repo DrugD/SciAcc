@@ -1,0 +1,22 @@
+{
+  "paper_title": "Tensorized Hypergraph Neural Networks (THNN)",
+  "venue": "SIAM SDM 2024",
+  "q_main": "如何在超图神经网络中高效地表达与抽取均匀超图（uniform hypergraph）上“节点间高阶（>2阶）相互作用”的表示？",
+  "q_formal": "现有 HGNN 大多通过 clique/star 展开或 Chebyshev 多项式的低阶近似把超图转换为加权普通图，本质上仍是节点之间的二阶多项式回归，因而在结构层面就无法保留/刻画 m-均匀超图中固有的 m 元高阶关联。本论文真正要解决的科学问题是：在不丢失高阶结构信息的前提下，如何为 uniform hypergraph 建立一个与超边阶数直接对齐的、可高阶 多项式回归的神经网络表示理论？",
+  "q_background": "超图被越来越多地用于社交/生物/推荐网络以编码“三个及以上节点同时相关”的现象；然而主流 HGNN（HGNN、HyperGCN、HNHN、UniGNN 等）都继承了谱方法或 clique/star 展开，在过程中把高阶关联退化为节点对之间的相似度/加权，导致'即使在真正 m 阶的数据上，也只能用二阶回归去拟合 m 阶信号'。这一不足长期被忽视，亟需一个显式嵌入阶数的建模框架。",
+  "q_boundary_position": "边界迁移问题",
+  "q_boundary_position_reason": "已有超图学习范式（clique/star 展开、Chebyshev 近似、MPNN）在该问题上部分失败——它们可以在任意超图上跑通，但在 uniform / 高阶相关场景下结构信息被压扁，性能退化；解决该问题需要把思路从“图/矩阵代数”扩展到“张量代数＋对称 CP 分解”，即需要方法扩展而非单纯性能调优。",
+  "required_evidence": [
+    "理论证据：证明 HGNN 的 m-阶多项式表达能力（表明现有方法至多为 2 阶），并给出 THNN 与对称 CP 分解的等价性",
+    "合成数据证据：在可控阶数的 uniform hypergraph 上，THNN 相比 2 阶基线在阶数增加时仍保持稳定或上升的表示能力",
+    "真实数据证据：在 MNIST 3-uniform / 3D 物体识别等 3 阶以上任务上超越 HGNN/HyperGCN/HNHN/UniGNN 等基线的节点/物体分类准确率",
+    "消融证据：对称 CP 分解中的秩 K、层数等对表达力的影响可解释、可调节"
+  ],
+  "required_evaluation": [
+    "表达能力：能否以 m 阶多项式复原 m-均匀超图的高阶交互（理论+合成可控实验）",
+    "下游性能：在 uniform hypergraph 分类基准（ModelNet40、NTU、MNIST 3-uniform 等）上的分类准确率",
+    "参数效率/计算复杂度：对称 CP 分解带来的参数量/时间复杂度是否可接受",
+    "稳健性：对超边阶数 m 和秩 K 的变化是否稳定",
+    "通用性：THNN 框架是否能自然退化为 GCN/HGNN 等作为特例（概念一致性）"
+  ]
+}

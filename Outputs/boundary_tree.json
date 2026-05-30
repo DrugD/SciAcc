@@ -1,0 +1,877 @@
+{
+  "D": {
+    "label": "对象域",
+    "code": "D_t",
+    "hint": "论文承认或引入的研究对象、任务、现象、数据",
+    "children": [
+      {
+        "label": "超图结构类型",
+        "children": [
+          {
+            "label": "静态超图 (V, E, H 给定)",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN"
+            ]
+          },
+          {
+            "label": "动态超图 (H 可学)",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN"
+            ]
+          },
+          {
+            "label": "m-均匀超图 (m 阶邻接张量 A^(m))",
+            "year": 2024,
+            "papers_introduced": [
+              "THNN"
+            ]
+          },
+          {
+            "label": "图 ∪ 超图 · 统一对象空间",
+            "year": 2024,
+            "papers_introduced": [
+              "UniG-Encoder"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "同质性谱",
+        "children": [
+          {
+            "label": "同质超图 (默认假设)",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN",
+              "THNN"
+            ]
+          },
+          {
+            "label": "异质超图 (HHL)",
+            "year": 2025,
+            "children": [
+              {
+                "label": "连续同质率 Hedge / Hnode",
+                "year": 2025,
+                "papers_introduced": [
+                  "HyperUFG"
+                ]
+              }
+            ],
+            "papers_introduced": [
+              "HyperUFG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "数据完备性",
+        "children": [
+          {
+            "label": "单视图 · 完备",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN",
+              "THNN",
+              "UniG-Encoder",
+              "HyperUFG"
+            ]
+          },
+          {
+            "label": "多视图 · 随机缺失",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "下游任务",
+        "children": [
+          {
+            "label": "节点 / 物体分类",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN",
+              "THNN",
+              "UniG-Encoder",
+              "HyperUFG"
+            ]
+          },
+          {
+            "label": "聚类",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          },
+          {
+            "label": "缺失视图重建",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "现象 / 设定",
+        "children": [
+          {
+            "label": "\"初始 H 不可信\" 设定",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN"
+            ]
+          },
+          {
+            "label": "\"MLP 能超 HGNN\" 现象",
+            "year": 2024,
+            "papers_introduced": [
+              "UniG-Encoder",
+              "HyperUFG"
+            ]
+          },
+          {
+            "label": "超图作为 \"缺失重建工具\"",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "对象域",
+        "children": [
+          {
+            "label": "超图结构类型",
+            "children": [
+              {
+                "label": "异质超图 (多类型属性作超边)",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "下游任务",
+            "children": [
+              {
+                "label": "知识追踪 / 学生作答序列预测",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "数据完备性",
+            "children": [
+              {
+                "label": "稀疏交互记录 (cold-start / long-tail)",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "现象 / 设定",
+            "children": [
+              {
+                "label": "异质属性 + 高阶集合关系并存",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "M": {
+    "label": "方法域",
+    "code": "M_t",
+    "hint": "论文认为有效、可用、合法的方法体系",
+    "children": [
+      {
+        "label": "架构范式",
+        "children": [
+          {
+            "label": "两阶段 MPNN (node↔edge↔node)",
+            "year": 2023,
+            "children": [
+              {
+                "label": "HGNN / HGNN+",
+                "year": 2023,
+                "papers_introduced": [
+                  "TDHNN"
+                ]
+              },
+              {
+                "label": "HNHN",
+                "year": 2023,
+                "papers_introduced": [
+                  "TDHNN"
+                ]
+              },
+              {
+                "label": "HyperGCN",
+                "year": 2023,
+                "papers_introduced": [
+                  "TDHNN"
+                ]
+              },
+              {
+                "label": "UniGNN 族 (UniGCN/UniGAT/UniSAGE/UniGCNII)",
+                "year": 2023,
+                "papers_introduced": [
+                  "UniG-Encoder",
+                  "HyperUFG"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "张量代数范式",
+            "year": 2024,
+            "children": [
+              {
+                "label": "m 阶邻接张量的对称 CP 分解",
+                "year": 2024,
+                "papers_introduced": [
+                  "THNN"
+                ]
+              },
+              {
+                "label": "m 阶多项式回归视角 (HGNN = 2 阶特例)",
+                "year": 2024,
+                "papers_introduced": [
+                  "THNN"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "投影展开范式",
+            "year": 2024,
+            "children": [
+              {
+                "label": "归一化投影矩阵 P = [P_V; P_E]",
+                "year": 2024,
+                "papers_introduced": [
+                  "UniG-Encoder"
+                ]
+              },
+              {
+                "label": "P^T 反投影聚合",
+                "year": 2024,
+                "papers_introduced": [
+                  "UniG-Encoder"
+                ]
+              },
+              {
+                "label": "可学习 Line / Star 展开",
+                "year": 2024,
+                "papers_introduced": [
+                  "UniG-Encoder"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "简化主干范式 (替代两阶段 MPNN)",
+            "year": 2024,
+            "children": [
+              {
+                "label": "纯 MLP 主干",
+                "year": 2024,
+                "papers_introduced": [
+                  "UniG-Encoder"
+                ]
+              },
+              {
+                "label": "Transformer 主干",
+                "year": 2024,
+                "papers_introduced": [
+                  "UniG-Encoder"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "结构学习策略",
+        "children": [
+          {
+            "label": "静态 H (给定)",
+            "year": 2023,
+            "papers_introduced": [
+              "THNN",
+              "UniG-Encoder",
+              "HyperUFG"
+            ]
+          },
+          {
+            "label": "动态 H (可学)",
+            "year": 2023,
+            "children": [
+              {
+                "label": "连接权重重排 (经典 DHGNN 做法)",
+                "year": 2023,
+                "papers_introduced": [
+                  "TDHNN"
+                ]
+              },
+              {
+                "label": "Reparameterized 超边采样",
+                "year": 2023,
+                "papers_introduced": [
+                  "TDHNN"
+                ]
+              },
+              {
+                "label": "超边数量自适应 · 饱和率 S_H",
+                "year": 2023,
+                "papers_introduced": [
+                  "TDHNN"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "信号与滤波设计",
+        "children": [
+          {
+            "label": "单一低通 (默认 HGNN 卷积)",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN",
+              "THNN",
+              "UniG-Encoder"
+            ]
+          },
+          {
+            "label": "低通 + 高通双通道 · Framelet",
+            "year": 2025,
+            "papers_introduced": [
+              "HyperUFG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "注意力机制",
+        "children": [
+          {
+            "label": "Transformer 风格双向 top-k 注意力",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "约束与正则",
+        "children": [
+          {
+            "label": "监督 L_s (同类节点→同超边)",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN"
+            ]
+          },
+          {
+            "label": "无监督 L_u (同超边节点→相似特征)",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN"
+            ]
+          },
+          {
+            "label": "张量低秩约束 · Schatten p-范数",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "联合优化 · 外部目标驱动",
+        "children": [
+          {
+            "label": "ONMF ≡ K-means 联合优化",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          },
+          {
+            "label": "超图 Laplacian 引导的缺失重建",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          },
+          {
+            "label": "外部任务目标 (聚类/重建) 驱动的超图学习",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "方法域",
+        "children": [
+          {
+            "label": "架构范式",
+            "children": [
+              {
+                "label": "异质超图范式 (元路径子图 + 双层注意力)",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ],
+                "children": [
+                  {
+                    "label": "Intra-graph attention (节点↔超边, 投影函数 f(·))",
+                    "year": 2023,
+                    "papers_introduced": [
+                      "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                    ]
+                  },
+                  {
+                    "label": "Inter-graph attention (子图语义池化融合)",
+                    "year": 2023,
+                    "papers_introduced": [
+                      "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "label": "结构学习策略",
+            "children": [
+              {
+                "label": "动态 H (可学)",
+                "children": [
+                  {
+                    "label": "自适应拓扑增强 dropout (节点重要性驱动)",
+                    "year": 2023,
+                    "papers_introduced": [
+                      "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "label": "自监督对比学习",
+            "year": 2023,
+            "papers_introduced": [
+              "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+            ],
+            "children": [
+              {
+                "label": "InfoNCE + 同超边共现负样本选择",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              },
+              {
+                "label": "多任务联合优化 (L_main + λ L_ssl)",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "E": {
+    "label": "证据域",
+    "code": "E_t",
+    "hint": "支撑主张所需的证据类型与证据质量标准",
+    "children": [
+      {
+        "label": "实证证据",
+        "children": [
+          {
+            "label": "真实基准精度 mean ± std",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN",
+              "THNN",
+              "UniG-Encoder",
+              "IMVC_HG",
+              "HyperUFG"
+            ]
+          },
+          {
+            "label": "受控合成探针",
+            "year": 2024,
+            "children": [
+              {
+                "label": "k-uniform (k=2..5) 阶数扫描",
+                "year": 2024,
+                "papers_introduced": [
+                  "THNN"
+                ]
+              },
+              {
+                "label": "同质率扫描",
+                "year": 2025,
+                "papers_introduced": [
+                  "HyperUFG"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "大规模统一比较 (18+ 基准)",
+            "year": 2024,
+            "papers_introduced": [
+              "UniG-Encoder"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "理论证据",
+        "children": [
+          {
+            "label": "退化一致性",
+            "year": 2024,
+            "children": [
+              {
+                "label": "THNN ⊃ HGNN (2 阶特例)",
+                "year": 2024,
+                "papers_introduced": [
+                  "THNN"
+                ]
+              },
+              {
+                "label": "2-uniform 度量 ⊃ 经典图同质率",
+                "year": 2025,
+                "papers_introduced": [
+                  "HyperUFG"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "双射构造 (UniG Theorem 1)",
+            "year": 2024,
+            "papers_introduced": [
+              "UniG-Encoder"
+            ]
+          },
+          {
+            "label": "等价性推导 (ONMF ≡ K-means)",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "鲁棒性证据",
+        "children": [
+          {
+            "label": "低训练比例扫描 (2%–44%)",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN"
+            ]
+          },
+          {
+            "label": "不完备率扫描",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          },
+          {
+            "label": "跨 regime 稳定性",
+            "year": 2025,
+            "papers_introduced": [
+              "UniG-Encoder",
+              "HyperUFG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "可复现与可检验",
+        "children": [
+          {
+            "label": "组件级 ablation",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN",
+              "THNN",
+              "IMVC_HG",
+              "HyperUFG"
+            ]
+          },
+          {
+            "label": "超参灵敏度 (m, K, p, β, γ)",
+            "year": 2024,
+            "papers_introduced": [
+              "TDHNN",
+              "THNN",
+              "IMVC_HG"
+            ]
+          },
+          {
+            "label": "公开 Repository + 数据",
+            "year": 2025,
+            "papers_introduced": [
+              "HyperUFG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "基准与度量作为证据",
+        "children": [
+          {
+            "label": "继承基准 (Cora/ModelNet40/NTU/CiteSeer/…)",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN",
+              "THNN",
+              "UniG-Encoder"
+            ]
+          },
+          {
+            "label": "新基准 HHL 集",
+            "year": 2025,
+            "papers_introduced": [
+              "HyperUFG"
+            ]
+          },
+          {
+            "label": "新度量 Hedge / Hnode",
+            "year": 2025,
+            "papers_introduced": [
+              "HyperUFG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "证据域",
+        "children": [
+          {
+            "label": "鲁棒性证据",
+            "children": [
+              {
+                "label": "训练比例稀疏扫描 (20%/40%/60%)",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "可复现与可检验",
+            "children": [
+              {
+                "label": "嵌入 t-SNE 可视化 (语义聚类可分性)",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "实证证据",
+            "children": [
+              {
+                "label": "上游表示模块 × 多下游序列模型兼容性证据",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "V": {
+    "label": "评价规则",
+    "code": "V_t",
+    "hint": "判断成功、失败、价值和贡献的评价规则",
+    "children": [
+      {
+        "label": "精度性评价",
+        "children": [
+          {
+            "label": "≥ 2 代表基准超 SOTA",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN",
+              "THNN",
+              "UniG-Encoder",
+              "IMVC_HG"
+            ]
+          },
+          {
+            "label": "跨 regime 稳定性 > 单基准登顶",
+            "year": 2025,
+            "papers_introduced": [
+              "UniG-Encoder",
+              "HyperUFG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "结构性评价",
+        "children": [
+          {
+            "label": "组件消融不可或缺",
+            "year": 2023,
+            "papers_introduced": [
+              "TDHNN",
+              "IMVC_HG",
+              "HyperUFG"
+            ]
+          },
+          {
+            "label": "对抗 MLP baseline 不应被超越",
+            "year": 2024,
+            "papers_introduced": [
+              "UniG-Encoder",
+              "HyperUFG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "理论性评价",
+        "children": [
+          {
+            "label": "统一性理论本身构成贡献",
+            "year": 2024,
+            "papers_introduced": [
+              "UniG-Encoder"
+            ]
+          },
+          {
+            "label": "可退化到已有特例 (概念一致性)",
+            "year": 2024,
+            "papers_introduced": [
+              "THNN",
+              "HyperUFG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "范式性评价",
+        "children": [
+          {
+            "label": "新问题 + 新度量 + 新基准 + baseline 即完整贡献",
+            "year": 2025,
+            "papers_introduced": [
+              "HyperUFG"
+            ]
+          },
+          {
+            "label": "Baseline 定位合法",
+            "year": 2025,
+            "papers_introduced": [
+              "HyperUFG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "工程性评价",
+        "children": [
+          {
+            "label": "简洁 / 可解释",
+            "year": 2024,
+            "papers_introduced": [
+              "UniG-Encoder"
+            ]
+          },
+          {
+            "label": "|E| ≫ |V| 计算友好",
+            "year": 2024,
+            "papers_introduced": [
+              "UniG-Encoder"
+            ]
+          },
+          {
+            "label": "端任务评价 > 中间指标",
+            "year": 2025,
+            "papers_introduced": [
+              "IMVC_HG"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "评价规则",
+        "children": [
+          {
+            "label": "精度性评价",
+            "children": [
+              {
+                "label": "稀疏场景下相对增益放大",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          },
+          {
+            "label": "结构性评价",
+            "children": [
+              {
+                "label": "上游模块通用性 (跨下游网络一致提升)",
+                "year": 2023,
+                "papers_introduced": [
+                  "Self-supervised_heterogeneous_hypergraph_network_for_knowledge_tracing"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

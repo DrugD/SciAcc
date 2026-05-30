@@ -1,0 +1,23 @@
+{
+  "paper_title": "UniG-Encoder: A universal feature encoder for graph and hypergraph node classification",
+  "venue": "Pattern Recognition 2024",
+  "q_main": "为什么在一些常用的图/超图基准上，精心设计的 GNN / HGNN 会被一个简单的 MLP 超越？能否设计一个在同构/异构、图/超图上都统一有效的表示学习框架？",
+  "q_formal": "现有 GNN/HGNN 的两大主流范式——谱方法 (spectral) 与消息传递 (MPNN)——在面对异构图 (heterophily)、小图、大量超边时都会出问题：谱方法依赖无向图拉普拉斯并对规模敏感；MPNN 把边只当成加权聚合通道、HGNN 又把“节点→超边→节点”两阶段消息传递弄得冗余且易在 |E|≫|V| 时算力爆炸；最终它们有时反被不使用结构的 MLP 打败。本论文要解决的科学问题是：能否通过一个统一的、结构感知但不被结构锁死的特征编码器，在图/超图、同质/异质多种设置下同时超越 MLP、GNN、HGNN？",
+  "q_background": "深度图学习已发展出 GCN/GCNII/GraphSAGE/GAT 等谱/空间方法，以及 HGNN/HyperGCN/AllSet/UniGCNII 等超图变体；同时社区逐步意识到同质性假设并不总成立，出现 H2GCN/GGCN/GloGNN 等专攻异构图的模型。但它们往往是'专项'解决方案：要么只面向图、要么只面向超图、要么只面向某一侧的同质/异构。缺失的是：一个同一套架构就能覆盖 (i) 图 vs 超图、(ii) homophily vs heterophily 两个维度的编码器。",
+  "q_boundary_position": "边界迁移问题",
+  "q_boundary_position_reason": "问题在'图' 或 '超图'、或 'homophily' 或 'heterophily' 的单一维度上已有专用解；但组合起来时已有范式部分失败（MLP 竟可超越 HGNN），需要一个新的结构视角（本文：投影矩阵把节点⇄边当成同一集合中的元素）来跨维度覆盖，属于方法扩展而非仅调参。",
+  "required_evidence": [
+    "理论证据：给出从 (V, E) 到投影集 P 的双射构造，保证正/反投影矩阵的可逆性 (Theorem 1) 及其对同质/异质图的可调性；",
+    "对比证据：在 12 个超图数据集 + 6 个图数据集（含 CiteSeer/Cora/PubMed 和典型异构集合 Cornell/Texas/Wisconsin、Zoo/House/Senate 等）上全面超越谱/空间/异构专用 SOTA 以及 MLP；",
+    "可解释证据：投影矩阵中节点部分 P_V 与边部分 P_E 的权重可根据同质性先验显式调节；",
+    "可扩展证据：UniG-Encoder II 通过多跳聚合利用远距离信息，验证框架的可拓展性；",
+    "效率证据：所用计算代价与 MLP 同量级，远低于双阶段 MPNN。"
+  ],
+  "required_evaluation": [
+    "在图与超图、同质与异质数据上对比 MLP / GCN / GCNII / GraphSAGE / GAT / H2GCN / GGCN / GloGNN / HGNN / HyperGCN / AllSet / UniGCNII 等基线的节点分类精度；",
+    "对同质度 (homophily ratio) 变化的稳健性；",
+    "投影矩阵是否真的“可解释”：可视化/权重分析；",
+    "时间/空间复杂度比较（尤其相对二阶段 MPNN 在 |E|≫|V| 时的表现）；",
+    "UniG-Encoder II 多跳扩展是否有一致性增益。"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "paper_title": "Totally Dynamic Hypergraph Neural Network (TDHNN)",
+  "venue": "IJCAI-23",
+  "w_summary": "作者提出 TDHNN，一个端到端的“完全动态”超图神经网络：把超边特征建模为可训练的高斯分布 P(X_e | X_v)，用 reparameterization 采样 m 条超边，以 Transformer 风格的双向注意力分别做超边特征更新与节点-超边分配，再以一个基于饱和度评分 S_H 的启发式规则自适应调整超边数量 m，并配合简化的超图卷积以及有/无监督约束共同训练，在多视图 3D 识别和引文网络上全面优于 SHGNN / DHGNN 基线。",
+  "w_type": "提出新方法（端到端可学习的动态超图结构 + 动态超边数量调节机制）",
+  "w_object": "没有预先给出超边特征、初始超图质量不高或不可得的超图节点分类/物体分类任务；具体对象包括 Princeton ModelNet40、NTU 3D、Cora 及其多种不同训练比例的切分。",
+  "w_mechanism": "机制分四步：(1) Hyperedge Feature Sampling：为每维特征学习 μ、σ，采 Q∼N(0,I)，(X_e)_i = μ + σ⊙Q_i，reparameterization 保证可梯度；(2) Hyperedge Feature Update：以 q(X_e)·k(X̂_v) 的 top-k_n 注意力把节点信息聚合到超边；(3) Hypergraph Construction：反向用 q(X̂_v)·k(X̂_e) 的 top-k_e 把节点挂到超边，得到可微近似的 H；(4) 超边数量自适应：用 S_H = 1 − |E_empty|/|E| 与阈值 β, γ 动态增减 m。此外用简化卷积 X^(t+1)_v = σ(w X̂_v^(t) + H^(t) X_e^(t) Θ^(t)) 做节点更新，并添加监督 L_s（同类节点挂相同超边）和无监督 L_u（同超边节点特征相似）两种约束。",
+  "w_evidence": [
+    "ModelNet40 上 TDHNN 达到 97.52%（GV+MV），全面优于 HGNN、HGNN+、HNHN、DHGNN、HyperGCN、DeepHGSL、HSL；",
+    "NTU 3D 上达到 86.05%，平均比 DHGNN/HSL 高 2–4 个百分点；",
+    "Cora 上在多种训练比例（2%–44%）下大多数设置均取得最佳，特别是训练数据变多时优势扩大；",
+    "消融：仅保留 Hyperedge Updater、或仅一类约束均性能退化；HU+C1+C2 组合才能同时稳定收敛并取得最佳；",
+    "与 k-means 的对比：证明可学习超边分布相当于可学习的“软聚类中心”，且节点可属多超边，契合超图语义。"
+  ],
+  "w_evaluation": [
+    "相较静态 HGNN/HGNN+：平均提升约 1.3%–1.6%，说明初始 H 非最优时的可学习性带来实质增益；",
+    "相较既有动态方法 DHGNN/HyperGCN/DeepHGSL/HSL：平均提升 1.95%–6.25%，且在低标注比例下优势更显著；",
+    "完全动态的价值：m 自适应规则避免空超边与冗余超边，使超图结构随训练逐步合理；",
+    "代价：引入采样和双向注意力会增加训练开销，但简化卷积公式部分抵消；",
+    "理论贡献：首次把“超边数量”作为可优化量，并给出不依赖显式可微的采样数规则 (S_H 启发式)，拓展了动态超图学习的可行设计空间。"
+  ],
+  "w_scope": "适用条件：(1) 超图任务且超边特征不可得；(2) 节点有足够信息学到合理的超边分布 P(X_e | X_v)；(3) 下游任务能提供监督或（至少）可用于设计结构正则；(4) 规模允许双向注意力的 m×n 计算。",
+  "w_failure_scenarios": [
+    "极端小样本且无任何标注：L_s 不可用、L_u 单独时作者观察到 ModelNet40/NTU 无法收敛（7%/6% 准确率），说明完全无监督下方法退化；",
+    "超大规模超图：m×n 的注意力和采样过程会成为主要瓶颈；",
+    "数据本身不存在真正的高阶结构：学到的动态超边可能只是噪声重排，相对 MLP/GCN 收益有限；",
+    "β、γ 与初始 m 设置不当：会导致反复增减 m 使训练振荡；",
+    "多视图特征严重分布不一致时（如 HNHN/DHGNN 在 GV+MV 融合时的不稳定情形），尽管 TDHNN 相对更稳，但仍依赖特征质量。"
+  ],
+  "push_dimensions": {
+    "primary": [
+      "M"
+    ],
+    "secondary": [
+      "D"
+    ],
+    "summary": "主推 M_t（动态结构 + 离散采样数自适应）；次推 D_t（把 m 与 P(X_e|X_v) 抬升为学习对象）。",
+    "multi_dim_link": "双维（D-M）"
+  }
+}

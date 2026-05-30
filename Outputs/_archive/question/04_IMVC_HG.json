@@ -1,0 +1,24 @@
+{
+  "paper_title": "Incomplete multi-view clustering based on hypergraph (IMVC_HG)",
+  "venue": "Information Fusion 2025",
+  "note": "该 PDF 文件名为 'Unifying multimodal interactions for rumor diffusion...' 但实际内容为 Chen et al. 的 IMVC_HG 论文，以实际 PDF 内容为准。",
+  "q_main": "在同时存在（1）视图间随机缺失、（2）样本点之间的高阶相关性、（3）多视图之间的低秩/互补结构的条件下，如何在一个联合优化框架内完成数据重建 + 表示学习 + 聚类，使得不完备多视图聚类既能用上高阶信息，又不被“先建图再谱聚类”的两步法所伤？",
+  "q_formal": "给定 K 个视图 {X^(k)}，其中每个视图存在随机缺失，现有不完备多视图聚类方法的结构性不足是：(i) 建图时只考虑点对相似度，忽略样本的高阶邻域；(ii) '表示学习' 与 '聚类' 被拆成两个阶段，导致学得的表示并非最利于聚类；(iii) 忽略视图之间的互补性和低秩结构。本论文要解决的问题是：能否在一个单步优化模型中同时求解 (a) 高阶（超图）引导下的缺失数据重建；(b) 带正交约束的非负矩阵分解 (ONMF) 直接给出聚类标签（等价于 K-means）；(c) 对多视图聚类标签张量施加 Schatten p-范数以显式刻画跨视图的低秩/互补结构？",
+  "q_background": "不完备多视图聚类已有大量方法：基于 NMF（PVC、MIC、DAIMC、GPMVC、OMVC、OPIMC）与基于图（SCIMC、PIC、IMSC_AGL、IMVTSC-MVI、HCP_IMSC、BGIMVSC、IMVC-CBG、OGIMC）。但它们分别存在：NMF 族对超过两视图扩展不佳或需谱后处理；图族只用二阶关系、割裂表示与聚类、忽视视图权重与互补低秩结构。尽管 HCP_IMSC 已首次将超图引入缺失视图重建，但未与 ONMF 和张量范数结合形成一步式框架。",
+  "q_boundary_position": "边界内问题",
+  "q_boundary_position_reason": "关键组件（超图建模、ONMF、张量 Schatten p-范数）在各自领域都已可用，本论文是在已确立的建模范式内组合与优化，使得原本分散的优势被整合到一步式模型中，属于对已有范式的整合与性能推进，非方法学扩展。",
+  "required_evidence": [
+    "建模证据：超图 Laplacian 引导的缺失视图重建在保留高阶近邻下误差更低；",
+    "聚类证据：ONMF 与 K-means 等价的推导与实验上等价或更优的聚类指标；",
+    "跨视图证据：引入 Schatten p-范数后比 Frobenius / 核范数更能刻画视图间低秩结构；",
+    "基线证据：在若干标准不完备多视图聚类数据集上超越 PVC、DAIMC、GPMVC、MIC、IMSC_AGL、IMVTSC-MVI、HCP_IMSC、BGIMVSC、IMVC-CBG、OGIMC 等；",
+    "消融证据：去掉超图模块 / 去掉 ONMF 正交约束 / 去掉张量 Schatten p-范数后性能下降。"
+  ],
+  "required_evaluation": [
+    "ACC / NMI / Purity 等聚类指标在不同缺失率下的表现；",
+    "是否在大规模或视图数≥3 的设置下仍可运行；",
+    "超图构造的鲁棒性：对 k-NN k 值、亲和矩阵质量的敏感度；",
+    "张量 Schatten p-范数参数 p 的选择灵敏性；",
+    "收敛性：一步联合目标的优化是否稳定收敛。"
+  ]
+}

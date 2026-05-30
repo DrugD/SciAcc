@@ -1,0 +1,35 @@
+{
+  "paper_title": "When Hypergraph Meets Heterophily: New Benchmark Datasets and Baseline (HyperUFG)",
+  "venue": "AAAI-25",
+  "q_main": "在“异质性 (heterophily)”主导的超图场景下，如何同时回答三件事：（度量）如何量化超图的同质/异质比？（数据）哪里去找真正有代表性的异质超图基准？（方法）为什么现有 HNN 会被简单 MLP 超越，应该设计什么样的 HNN 才能处理异质超图？",
+  "q_formal": "设超图 G=(V, E)，其同质性通常沿用图中 CE-homophily 直接套用，但这种二阶定义无法表达超边包含 ≥3 节点时的同类-跨类结构。同时，主流 HNN（HGNN、HyperGCN、UniGNN 系列）都隐式假设连接即相似（低通），导致在低同质率下被 MLP 超越。本论文真正要解决的科学问题是：(Q1) 从超边与超节点两个视角，定义能刻画异质性的超图同质率度量；(Q2) 建立覆盖多真实场景的异质超图基准数据集；(Q3) 设计一个同时含低通与高通滤波（framelet）的 HNN 基线，以应对异质情境。",
+  "q_background": "图神经网络方向已经认识到 heterophily 问题并发展出 H2GCN、GGCN、GloGNN 等方法，同时建立了 Cornell/Texas/Wisconsin 等异质图基准。相比之下，超图社区大量研究仍默认同质性：(a) 缺乏专门的同质/异质度量；(b) 缺乏大规模、高质量、多应用场景的异质超图数据集；(c) 缺乏专门处理异质超图的基线模型。这三重缺口使 HHL (Heterophilic Hypergraph Learning) 几乎空白。",
+  "q_boundary_position": "边界外问题",
+  "q_boundary_position_reason": "不仅方法不够，连“问题如何衡量”“用什么数据评估”都尚未建立；现有度量、数据与模型三位一体都不足以处理异质超图，必须同时在度量、数据、方法三条线上扩展研究对象与评价规则，属于典型的边界外开拓工作。",
+  "required_evidence": [
+    "度量证据：所提出的 Hedge 和 Hnode 同质率在 2-uniform 超图上退化为经典图同质率，在一般超图上仍保留合理语义；",
+    "数据证据：新基准覆盖不同规模、应用领域，且具有从低到高的同质率范围；",
+    "现象证据：在低同质率合成数据上 MLP 优于 HGNN/HyperGCN/UniGNN，随同质率增加 HNN 反超 MLP；",
+    "方法证据：HyperUFG 通过 framelet 低/高通滤波在合成与真实异质超图上同时优于现有 HNN；",
+    "泛化证据：在原有同质基准上 HyperUFG 性能不显著退化，说明其不是只适配异质。"
+  ],
+  "required_evaluation": [
+    "同质/异质度量：在合成可控数据上是否单调反映真实同质率；",
+    "数据集多样性：是否覆盖不同规模、不同应用、不同同质率区间；",
+    "模型基线比较：HyperUFG 对比至少 8 种主流 HNN 的分类精度；",
+    "对 MLP 的超越幅度：是否在所有同质率区间都不低于 MLP；",
+    "可复现性：HHL Repository 提供度量、数据、模型的公开实现。"
+  ],
+  "push_dimensions": {
+    "primary": [
+      "D",
+      "E"
+    ],
+    "secondary": [
+      "M",
+      "V"
+    ],
+    "summary": "主推 D_t（新开异质子域 + 新度量 Hedge/Hnode）和 E_t（新基准 + MLP 强制对照）；次推 M_t（framelet 双通道）和 V_t（「≥ MLP 底线」成功规则）。",
+    "multi_dim_link": "四维全联动（D-M-E-V），以 D 与 E 最强"
+  }
+}

@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>超图领域科学边界 B_t 演化可视化</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #11141c;
+    --panel-2: #161a24;
+    --border: #1f2431;
+    --text: #e6e9f2;
+    --muted: #8a93a6;
+    --accent: #7aa2ff;
+    --accent-2: #a78bfa;
+    --ok: #34d399;
+    --warn: #f59e0b;
+    --q: #60a5fa;
+    --w: #f472b6;
+    --d: #34d399;
+    --m: #a78bfa;
+    --e: #f59e0b;
+    --v: #fb7185;
+    --inh: #545a6b;
+    --new: #e6e9f2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+  header {
+    padding: 22px 28px 14px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: rgba(11,13,18,0.94); backdrop-filter: blur(10px); z-index: 10;
+  }
+  h1 { margin: 0 0 4px 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
+  .subtitle { color: var(--muted); font-size: 13px; }
+  .controls { display: flex; gap: 18px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .timeline-wrap { flex: 1 1 360px; min-width: 300px; }
+  .timeline-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  .timeline-labels span { cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+  .timeline-labels span.active { color: var(--accent); background: rgba(122,162,255,0.12); }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .toggles { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toggle {
+    padding: 6px 12px; border: 1px solid var(--border); background: var(--panel);
+    color: var(--text); border-radius: 6px; font-size: 13px; cursor: pointer; user-select: none;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .toggle input { margin: 0; accent-color: var(--accent); }
+  .toggle.q.active { border-color: var(--q); box-shadow: 0 0 0 1px var(--q) inset; }
+  .toggle.w.active { border-color: var(--w); box-shadow: 0 0 0 1px var(--w) inset; }
+  .toggle.legend { border-style: dashed; cursor: default; }
+  main { padding: 22px 28px; max-width: 1600px; margin: 0 auto; }
+  .section-title { font-size: 15px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin: 20px 0 10px; }
+
+  .bt-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px;
+  }
+  @media (min-width: 1100px) { .bt-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+  .dim-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px 16px; min-height: 240px; position: relative; overflow: hidden;
+  }
+  .dim-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .dim-card.D::before { background: var(--d); }
+  .dim-card.M::before { background: var(--m); }
+  .dim-card.E::before { background: var(--e); }
+  .dim-card.V::before { background: var(--v); }
+  .dim-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .dim-title { font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
+  .dim-code { font-family: "SF Mono", Menlo, monospace; font-size: 13px; color: var(--muted); }
+  .dim-count { font-size: 11px; color: var(--muted); }
+  .dim-section-label { font-size: 11px; color: var(--muted); margin: 10px 0 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .items { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+  .item { font-size: 13px; line-height: 1.5; padding: 5px 9px; border-radius: 5px; background: var(--panel-2); display: flex; gap: 8px; align-items: flex-start; }
+  .item .dot { flex: 0 0 auto; width: 6px; height: 6px; border-radius: 50%; margin-top: 7px; }
+  .item.inherited .dot { background: var(--inh); }
+  .item.new .dot { background: var(--new); box-shadow: 0 0 8px var(--new); }
+  .item.inherited { color: #bac0cf; }
+  .item.new { color: var(--new); }
+  .item .tag {
+    font-size: 10px; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--border); margin-left: auto; color: var(--muted); flex: 0 0 auto;
+  }
+  .item.new .tag { color: var(--accent); border-color: var(--accent); background: rgba(122,162,255,0.1); }
+
+  /* Tree structure */
+  .tree-node { margin: 0; }
+  .tree-axis {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.2px;
+    padding: 6px 0 3px; color: var(--text);
+    border-bottom: 1px dashed var(--border);
+  }
+  .tree-family {
+    font-size: 12px; font-weight: 500; color: #b5bccf;
+    padding: 3px 0 2px 12px; position: relative;
+  }
+  .tree-family::before { content: "├"; position: absolute; left: 0; color: var(--muted); font-family: monospace; }
+  .tree-leaf-wrap { padding-left: 22px; display: flex; flex-direction: column; gap: 3px; margin: 2px 0 6px; position: relative; }
+  .tree-leaf-wrap::before { content: ""; position: absolute; left: 14px; top: 0; bottom: 6px; width: 1px; background: var(--border); }
+  .family-leaf-wrap { padding-left: 34px; position: relative; }
+  .family-leaf-wrap::before { content: ""; position: absolute; left: 26px; top: 0; bottom: 6px; width: 1px; background: var(--border); }
+  .item.tree-leaf { padding: 3px 8px; font-size: 12px; }
+  .item.tree-leaf .dot { width: 5px; height: 5px; margin-top: 6px; }
+  .node-count { font-size: 10px; color: var(--muted); margin-left: 8px; font-weight: normal; }
+  .node-dimmed { opacity: 0.25; filter: grayscale(0.8); }
+
+  .papers-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; margin-top: 8px;
+  }
+  .paper-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; transition: opacity 0.25s, filter 0.25s;
+  }
+  .paper-card.dim { opacity: 0.25; filter: grayscale(0.5); }
+  .paper-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+  .paper-title { font-size: 14px; font-weight: 600; line-height: 1.35; }
+  .paper-venue { font-size: 11px; color: var(--muted); white-space: nowrap; padding: 2px 6px; border: 1px solid var(--border); border-radius: 3px; }
+  .paper-id {
+    display: inline-block; font-family: "SF Mono", Menlo, monospace; font-size: 11px;
+    color: var(--accent); margin-right: 6px;
+  }
+  .qw-block { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .qw-block.q .qw-label { color: var(--q); }
+  .qw-block.w .qw-label { color: var(--w); }
+  .qw-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .qw-label::before { content: ""; display: inline-block; width: 3px; height: 12px; background: currentColor; border-radius: 2px; }
+  .qw-field { font-size: 12.5px; line-height: 1.55; margin-bottom: 7px; }
+  .qw-field strong { color: var(--muted); font-weight: 500; display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; }
+  .qw-list { padding-left: 18px; margin: 3px 0 0 0; }
+  .qw-list li { font-size: 12.5px; line-height: 1.5; margin-bottom: 3px; color: #c8cedd; }
+  .q-hidden .qw-block.q { display: none; }
+  .w-hidden .qw-block.w { display: none; }
+
+  .stats-bar { display: flex; gap: 18px; color: var(--muted); font-size: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .stats-bar span strong { color: var(--text); font-weight: 600; }
+  .boundary-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin-top: 4px;
+  }
+  .boundary-badge.inside { background: rgba(52,211,153,0.15); color: var(--ok); border: 1px solid var(--ok); }
+  .boundary-badge.migrate { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid var(--warn); }
+  .boundary-badge.outside { background: rgba(251,113,133,0.15); color: var(--v); border: 1px solid var(--v); }
+
+  .footer-note { color: var(--muted); font-size: 12px; margin-top: 28px; text-align: center; }
+
+  details summary { cursor: pointer; color: var(--muted); font-size: 12px; user-select: none; padding: 2px 0; }
+  details[open] summary { color: var(--text); }
+  details .qw-field { margin-top: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>超图领域科学边界 <span style="color:var(--accent);">B<sub>t</sub></span> 演化可视化</h1>
+  <div class="subtitle">B<sub>t</sub> = ( <span style="color:var(--d)">D<sub>t</sub></span>, <span style="color:var(--m)">M<sub>t</sub></span>, <span style="color:var(--e)">E<sub>t</sub></span>, <span style="color:var(--v)">V<sub>t</sub></span> ) — 拖动时间轴以查看对象域 / 方法域 / 证据域 / 评价规则的累积演化；下方是此时点已发表的论文，及其科学问题 (q) 与科学工作 (w)。&nbsp;&nbsp;<a href="./index3d.html" style="color:var(--accent);text-decoration:none;border:1px solid var(--accent);padding:2px 10px;border-radius:3px;font-size:12px;">→ 3D 球形树视图</a></div>
+  <div class="controls">
+    <div class="timeline-wrap">
+      <div class="timeline-labels" id="timeline-labels"></div>
+      <input type="range" min="0" max="0" step="1" value="0" id="timeline" />
+    </div>
+    <div class="toggles" style="margin-left:auto;">
+      <input type="file" id="upload-pdf" accept=".pdf" style="font-size:11px;color:var(--muted);" />
+      <button id="upload-btn" style="padding:4px 10px;background:rgba(122,162,255,0.18);color:var(--text);border:1px solid var(--border);border-radius:3px;cursor:pointer;font-size:11px;">上传并分析</button>
+      <span id="upload-status" style="font-size:11px;color:var(--muted);">就绪 · 后端 <code id="api-status">未连接</code></span>
+    </div>
+    <div class="toggles">
+      <label class="toggle q active"><input type="checkbox" id="toggle-q" checked /><span>显示科学问题 q</span></label>
+      <label class="toggle w active"><input type="checkbox" id="toggle-w" checked /><span>显示科学工作 w</span></label>
+      <span class="toggle legend"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--inh);display:inline-block;"></span>继承</span>
+      <span class="toggle legend"><span class="dot" style="width:8px;height:8px;border-radius:50%;background:var(--new);display:inline-block;box-shadow:0 0 6px var(--new);"></span>本 t 新增</span>
+    </div>
+  </div>
+</header>
+
+<main id="app">
+  <div class="section-title">科学边界 B<sub id="bt-sub">t</sub> — 当前时间 <span id="year-label" style="color:var(--accent);font-weight:600;">2025</span></div>
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <div class="bt-grid" id="bt-grid"></div>
+
+  <div class="section-title">该时间点已发表的论文（q + w）</div>
+  <div class="papers-grid" id="papers-grid"></div>
+
+  <div class="footer-note">数据来源：Outputs/question/*.json 与 Outputs/work/*.json （共 5 篇论文 × 2 视角）。滑动时间轴可查看 B<sub>t</sub> 对 D / M / E / V 的累积扩张。</div>
+</main>
+
+<script>
+// ===== Backend-driven data /* paper-scipro-backend-wired-2d */ =====
+const API = window.PAPER_SCIPRO_API || 'http://127.0.0.1:8770';
+const BOUNDARY_MAP = {'边界内问题':'inside','边界迁移问题':'migrate','边界外问题':'outside'};
+let PAPERS = [];
+let BT_TREE = {};
+let YEARS = [];
+async function loadFromBackend() {
+  const apiStatusEl = document.getElementById('api-status');
+  const bust = () => `?t=${Date.now()}`;
+  const opts = { cache: 'no-store' };
+  try {
+    const idx = await fetch(`${API}/api/papers${bust()}`, opts).then(r => { if (!r.ok) throw new Error('papers HTTP ' + r.status); return r.json(); });
+    const tree = await fetch(`${API}/api/boundary-tree${bust()}`, opts).then(r => { if (!r.ok) throw new Error('tree HTTP ' + r.status); return r.json(); });
+    const details = await Promise.all(idx.papers.map(p =>
+      fetch(`${API}/api/papers/${encodeURIComponent(p.paper_id)}${bust()}`, opts).then(r => r.json())));
+    PAPERS = details.map((d, i) => ({
+      id: d.paper_id, year: d.year, order: idx.papers[i].order,
+      title: d.title, venue: d.venue,
+      boundary: BOUNDARY_MAP[d.boundary_position] || 'inside',
+      push_dimensions: d.push_dimensions,
+      q: d.question || {},
+      w: d.work || {}
+    }));
+    BT_TREE = tree;
+    if (apiStatusEl) apiStatusEl.textContent = `${API} · ${PAPERS.length} 篇`;
+  } catch (e) {
+    if (apiStatusEl) { apiStatusEl.textContent = '后端无响应: ' + e.message; apiStatusEl.style.color = '#fb7185'; }
+    throw e;
+  }
+}
+function setupYears() {
+  YEARS = [...new Set(PAPERS.map(p => p.year).filter(Number.isFinite))].sort((a, b) => a - b);
+  if (YEARS.length === 0) YEARS = [new Date().getFullYear()];
+  const subs = '₁₂₃₄₅₆₇₈₉';
+  document.getElementById('timeline-labels').innerHTML =
+    YEARS.map((y, i) => `<span data-year="${y}">t${subs[i] || ('('+(i+1)+')')} · ${y}</span>`).join('');
+  const slider = document.getElementById('timeline');
+  slider.min = '0'; slider.max = String(Math.max(0, YEARS.length - 1)); slider.value = slider.max;
+  document.getElementById('year-label').textContent = String(YEARS[YEARS.length - 1]);
+}
+
+// Tree helpers (recovered after backend wiring removed the embedded data block).
+// computeMinYear caches the earliest year-of-introduction across each subtree
+// so that internal nodes can decide visibility against the active timeline.
+function computeMinYear(node) {
+  if (!node) return Infinity;
+  if (!node.children || node.children.length === 0) {
+    node._minYear = node.year ?? Infinity;
+    return node._minYear;
+  }
+  let m = node.year ?? Infinity;
+  for (const c of node.children) m = Math.min(m, computeMinYear(c));
+  node._minYear = m;
+  return m;
+}
+function countLeaves(node, activeYear, mode) {
+  if (!node) return 0;
+  if (!node.children || node.children.length === 0) {
+    const y = node.year ?? Infinity;
+    if (mode === 'cum') return y <= activeYear ? 1 : 0;
+    if (mode === 'new') return y === activeYear ? 1 : 0;
+    return 0;
+  }
+  return node.children.reduce((s, c) => s + countLeaves(c, activeYear, mode), 0);
+}
+(async () => {
+  try {
+    await loadFromBackend();
+    setupYears();
+    ["D","M","E","V"].forEach(d => { if (BT_TREE[d]) computeMinYear(BT_TREE[d]); });
+const DIM_META = {
+  D: { code: "D_t", title: "对象域", hint: "承认或引入的研究对象、任务、现象和数据" },
+  M: { code: "M_t", title: "方法域", hint: "认为有效、可用、合法的方法体系" },
+  E: { code: "E_t", title: "证据域", hint: "用来支撑主张的证据类型与证据标准" },
+  V: { code: "V_t", title: "评价规则", hint: "判断成功、失败、价值和贡献的规则" }
+};
+
+// ===== Rendering =====
+const state = {
+  yearIdx: 2, // default to latest
+  showQ: true,
+  showW: true
+};
+
+function getActiveYear() { return YEARS[state.yearIdx]; }
+
+// Recursively render a tree node. Depth: 0 = root dim, 1 = axis, 2 = family, 2+ = leaf.
+function renderTreeNode(node, depth, activeYear, path) {
+  const minY = node._minYear ?? node.year ?? Infinity;
+  const nodeVisible = minY <= activeYear;
+  const isLeaf = !node.children || node.children.length === 0;
+  const isNew = isLeaf && node.year === activeYear;
+
+  if (isLeaf) {
+    const li = document.createElement("li");
+    li.className = "item tree-leaf " + (isNew ? "new" : "inherited") + (nodeVisible ? "" : " node-dimmed");
+    li.innerHTML = `<span class="dot"></span><span>${node.label}</span><span class="tag">${node.year}</span>`;
+    return li;
+  }
+
+  // Internal node (axis at depth=1, family at depth>=2)
+  const wrap = document.createElement("div");
+  wrap.className = "tree-node" + (nodeVisible ? "" : " node-dimmed");
+  const head = document.createElement("div");
+  head.className = depth === 1 ? "tree-axis" : "tree-family";
+  const cum = countLeaves(node, activeYear, 'cum');
+  const newN = countLeaves(node, activeYear, 'new');
+  head.innerHTML = `${node.label}<span class="node-count">${cum}${newN ? ` · +${newN}` : ""}</span>`;
+  wrap.appendChild(head);
+
+  // Children container
+  const listWrap = document.createElement("div");
+  listWrap.className = depth === 1 ? "tree-leaf-wrap" : "family-leaf-wrap";
+  // Separate leaves and internals so leaves render inside a flat list per group
+  const ul = document.createElement("ul");
+  ul.className = "items";
+  node.children.forEach(child => {
+    const childEl = renderTreeNode(child, depth + 1, activeYear, [...path, node.label]);
+    // If childEl is LI → put in ul; else append to listWrap directly
+    if (childEl.tagName === "LI") ul.appendChild(childEl);
+    else {
+      // flush current ul first if it has items
+      if (ul.children.length) { listWrap.appendChild(ul); }
+      listWrap.appendChild(childEl);
+      // start a fresh ul for next batch
+      const newUl = document.createElement("ul");
+      newUl.className = "items";
+      ul.className = "items"; // keep class
+      // replace reference
+      listWrap.appendChild(newUl);
+    }
+  });
+  // append remaining leaves ul if it has content and isn't already appended
+  if (ul.parentNode !== listWrap && ul.children.length) listWrap.appendChild(ul);
+  wrap.appendChild(listWrap);
+  return wrap;
+}
+
+function renderBt() {
+  const activeYear = getActiveYear();
+  document.getElementById("year-label").textContent = activeYear;
+  document.getElementById("bt-sub").textContent = "t" + (state.yearIdx + 1);
+
+  const grid = document.getElementById("bt-grid");
+  grid.innerHTML = "";
+
+  ["D","M","E","V"].forEach(dim => {
+    const meta = DIM_META[dim];
+    const tree = BT_TREE[dim];
+    const cumLeaves = countLeaves(tree, activeYear, 'cum');
+    const newLeaves = countLeaves(tree, activeYear, 'new');
+
+    const card = document.createElement("div");
+    card.className = "dim-card " + dim;
+    card.innerHTML = `
+      <div class="dim-head">
+        <div>
+          <div class="dim-title">${meta.title}</div>
+          <div class="dim-count">${meta.hint}</div>
+        </div>
+        <div class="dim-code">${meta.code}</div>
+      </div>
+      <div class="dim-count">累计 <strong style="color:var(--text)">${cumLeaves}</strong> 叶子 · 本 t 新增 <strong style="color:var(--new)">${newLeaves}</strong> · ${tree.children.length} 条正交轴</div>
+      <div class="tree-root"></div>
+    `;
+    const root = card.querySelector(".tree-root");
+    tree.children.forEach(axis => {
+      const axisEl = renderTreeNode(axis, 1, activeYear, [tree.label]);
+      root.appendChild(axisEl);
+    });
+    grid.appendChild(card);
+  });
+
+  // stats
+  const active = PAPERS.filter(p => p.year <= activeYear).length;
+  const added = PAPERS.filter(p => p.year === activeYear).length;
+  document.getElementById("stats-bar").innerHTML = `
+    <span>已发表论文 <strong>${active}</strong>/${PAPERS.length}</span>
+    <span>本 t 新增论文 <strong>${added}</strong></span>
+    <span>B<sub>${state.yearIdx + 1}</sub> = (<span style="color:var(--d)">D</span>, <span style="color:var(--m)">M</span>, <span style="color:var(--e)">E</span>, <span style="color:var(--v)">V</span>)</span>
+  `;
+
+  // update year label highlight
+  document.querySelectorAll(".timeline-labels span").forEach(el => {
+    el.classList.toggle("active", parseInt(el.dataset.year) === activeYear);
+  });
+}
+
+function renderPapers() {
+  const activeYear = getActiveYear();
+  const grid = document.getElementById("papers-grid");
+  grid.innerHTML = "";
+
+  PAPERS.sort((a,b) => a.order - b.order).forEach(p => {
+    const visible = p.year <= activeYear;
+    const card = document.createElement("div");
+    card.className = "paper-card " + (visible ? "" : "dim");
+    const boundaryClass = p.boundary; // inside/migrate/outside
+    const boundaryText = p.boundary === "inside" ? "边界内" : p.boundary === "migrate" ? "边界迁移" : "边界外";
+
+    const q = p.q, w = p.w;
+
+    card.innerHTML = `
+      <div class="paper-head">
+        <div>
+          <div class="paper-title"><span class="paper-id">#${p.order}</span>${p.title}</div>
+          <div><span class="boundary-badge ${boundaryClass}">${boundaryText}</span></div>
+        </div>
+        <div class="paper-venue">${p.venue}</div>
+      </div>
+
+      <div class="qw-block q">
+        <div class="qw-label">科学问题 q</div>
+        <div class="qw-field"><strong>q_main</strong>${q.q_main}</div>
+        <details>
+          <summary>展开 q_formal / q_background / required_*</summary>
+          <div class="qw-field"><strong>q_formal</strong>${q.q_formal}</div>
+          <div class="qw-field"><strong>q_background</strong>${q.q_background}</div>
+          <div class="qw-field"><strong>q_boundary_position_reason</strong>${q.q_boundary_position_reason || ""}</div>
+          <div class="qw-field"><strong>required_evidence</strong><ul class="qw-list">${(q.required_evidence||[]).map(x=>`<li>${x}</li>`).join("")}</ul></div>
+          <div class="qw-field"><strong>required_evaluation</strong><ul class="qw-list">${(q.required_evaluation||[]).map(x=>`<li>${x}</li>`).join("")}</ul></div>
+        </details>
+      </div>
+
+      <div class="qw-block w">
+        <div class="qw-label">科学工作 w</div>
+        <div class="qw-field"><strong>w_summary</strong>${w.w_summary}</div>
+        <details>
+          <summary>展开 w_type / w_object / w_mechanism / w_evidence / w_evaluation / w_scope / w_failure</summary>
+          <div class="qw-field"><strong>w_type</strong>${w.w_type}</div>
+          <div class="qw-field"><strong>w_object</strong>${w.w_object}</div>
+          <div class="qw-field"><strong>w_mechanism</strong>${w.w_mechanism}</div>
+          <div class="qw-field"><strong>w_evidence</strong><ul class="qw-list">${(w.w_evidence||[]).map(x=>`<li>${x}</li>`).join("")}</ul></div>
+          <div class="qw-field"><strong>w_evaluation</strong><ul class="qw-list">${(w.w_evaluation||[]).map(x=>`<li>${x}</li>`).join("")}</ul></div>
+          <div class="qw-field"><strong>w_scope</strong>${w.w_scope}</div>
+          <div class="qw-field"><strong>w_failure_scenarios</strong><ul class="qw-list">${(w.w_failure_scenarios||[]).map(x=>`<li>${x}</li>`).join("")}</ul></div>
+        </details>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function render() {
+  renderBt();
+  renderPapers();
+  // q/w visibility
+  const app = document.getElementById("app");
+  app.classList.toggle("q-hidden", !state.showQ);
+  app.classList.toggle("w-hidden", !state.showW);
+}
+
+// ===== Events =====
+document.getElementById("timeline").addEventListener("input", (e) => {
+  state.yearIdx = parseInt(e.target.value);
+  render();
+});
+document.querySelectorAll(".timeline-labels span").forEach(el => {
+  el.addEventListener("click", () => {
+    const y = parseInt(el.dataset.year);
+    state.yearIdx = YEARS.indexOf(y);
+    document.getElementById("timeline").value = state.yearIdx;
+    render();
+  });
+});
+document.getElementById("toggle-q").addEventListener("change", e => {
+  state.showQ = e.target.checked;
+  e.target.closest(".toggle").classList.toggle("active", state.showQ);
+  render();
+});
+document.getElementById("toggle-w").addEventListener("change", e => {
+  state.showW = e.target.checked;
+  e.target.closest(".toggle").classList.toggle("active", state.showW);
+  render();
+});
+
+render();
+// ===== Upload handler =====
+(() => {
+  const btn = document.getElementById('upload-btn');
+  const fileEl = document.getElementById('upload-pdf');
+  const status = document.getElementById('upload-status');
+  if (!btn || !fileEl) return;
+  btn.addEventListener('click', async () => {
+    if (!fileEl.files || !fileEl.files.length) { status.textContent = '请先选择 PDF'; return; }
+    const f = fileEl.files[0]; btn.disabled = true; status.textContent = '上传中...';
+    const fd = new FormData(); fd.append('pdf', f);
+    let res; try { res = await fetch(`${API}/api/papers`, { method: 'POST', body: fd }); }
+    catch (e) { status.textContent = '上传失败: ' + e.message; btn.disabled = false; return; }
+    if (!res.ok) { status.textContent = '上传失败 HTTP ' + res.status; btn.disabled = false; return; }
+    const { task_id, paper_id } = await res.json();
+    status.textContent = `任务 ${task_id} 启动 · ${paper_id}`;
+    while (true) {
+      await new Promise(s => setTimeout(s, 2500));
+      const t = await fetch(`${API}/api/tasks/${task_id}`).then(r => r.json()).catch(() => null);
+      if (!t) { status.textContent = '查询失败'; break; }
+      status.textContent = `${t.status} · ${t.step}`;
+      if (t.status === 'done') { status.textContent = '完成 · 重新加载...'; setTimeout(() => location.reload(), 800); break; }
+      if (t.status === 'failed') { status.textContent = '失败: ' + ((t.error || '').split('\n')[0]); btn.disabled = false; break; }
+    }
+  });
+})();
+  } catch (e) { console.error('init failed:', e); }
+})();
+</script>
+</body>
+</html>

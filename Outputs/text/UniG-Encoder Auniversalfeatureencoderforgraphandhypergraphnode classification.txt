@@ -1,0 +1,1927 @@
+
+
+===== PAGE 1 =====
+Pattern Recognition 147 (2024) 110115
+Available online 13 November 2023
+0031-3203/© 2023 Elsevier Ltd. All rights reserved.
+Contents lists available at ScienceDirect
+Pattern Recognition
+journal homepage: www.elsevier.com/locate/pr
+UniG-Encoder: A universal feature encoder for graph and hypergraph node
+classification
+Minhao Zou a, Zhongxue Gan a, Yutong Wang a, Junheng Zhang a, Dongyan Sui a, Chun Guan a,
+Siyang Leng a,b,∗
+a Institute of AI and Robotics, Academy for Engineering and Technology, Fudan University, Shanghai 200433, China
+b Research Institute of Intelligent Complex Systems, Fudan University, Shanghai 200433, China
+A R T I C L E
+I N F O
+Keywords:
+Graph and hypergraph
+Representation learning
+Homophily and heterophily
+Node classification
+Feature projection
+A B S T R A C T
+Despite the decent performance and fruitful applications of Graph Neural Networks (GNNs), Hypergraph
+Neural Networks (HGNNs), and their well-designed variants, on some commonly used benchmark graphs and
+hypergraphs, they are outperformed by even a simple Multi-Layer Perceptron. This observation motivates a
+reexamination of the design paradigm of the current GNNs and HGNNs and poses challenges of extracting graph
+features effectively. In this work, a universal feature encoder for both graph and hypergraph representation
+learning is designed, called UniG-Encoder. The architecture starts with a forward transformation of the
+topological relationships of connected nodes into edge or hyperedge features via a normalized projection
+matrix. The resulting edge/hyperedge features, together with the original node features, are fed into a neural
+network. The encoded node embeddings are then derived from the reversed transformation, described by
+the transpose of the projection matrix, of the network’s output, which can be further used for tasks such as
+node classification. The designed projection matrix, encoding the graph features, is intuitive and interpretable.
+The proposed architecture, in contrast to the traditional spectral-based and/or message passing approaches,
+simultaneously and comprehensively exploits the node features and graph/hypergraph topologies in an efficient
+and unified manner, covering both heterophilic and homophilic graphs. Furthermore, a variant version, UniG-
+Encoder II, is devised to leverage multi-hop node information. Extensive experiments are conducted and
+demonstrate the superior performance of the proposed framework on twelve representative hypergraph datasets
+and six real-world graph datasets, compared to the state-of-the-art methods. Our implementation is available
+online at https://github.com/MinhZou/UniG-Encoder.
+1. Introduction
+Graph and hypergraph representation learning is a rapidly grow-
+ing field of research that focuses on learning meaningful representa-
+tions from nodes and edges/hyperedges features in graph/hypergraph-
+structured data. This field has seen significant progress in recent years
+due to the development of advanced techniques such as Graph Neural
+Networks (GNNs) and Hypergraph Neural Networks (HGNNs), which
+are capable of modeling complex interactions in real-world scenar-
+ios. Particularly, HGNNs are designed to extend GNNs to capture
+higher-order relationships among more than two nodes, which are
+ubiquitous in social networks [1,2], ecological networks [3], biological
+networks [4], etc. A fundamental task in graph/hypergraph represen-
+tation learning is node classification that categorizing nodes based on
+their features and graph/hypergraph topologies.
+∗Corresponding author at: Institute of AI and Robotics, Academy for Engineering and Technology, Fudan University, Shanghai 200433, China.
+E-mail addresses: ganzhongxue@fudan.edu.cn (Z. Gan), chunguan@fudan.edu.cn (C. Guan), syleng@fudan.edu.cn (S. Leng).
+Most of the existing literatures stick to learning node embeddings
+from neighbors using powerful neural operators, such as convolu-
+tion [5–7], attention [8,9], spectrum [10,11], and diffusion [12]. These
+approaches have resulted in the popular spectral-based and message
+passing architectures. Despite their wide applications, these approaches
+have limitations, as a simple Multi-Layer Perceptron (MLP) can even
+outperform well-designed GNNs, HGNNs, and their variants on some
+commonly used benchmark graphs and hypergraphs, see the results
+in Table 4 for Zoo, House, Senate, Cornell, Texas, and Wis-
+consin datasets. The major drawback of spectral-based architecture
+is its limitation to only undirected graphs and small-scale graphs. The
+one-stage message passing architecture, exemplified by models such as
+GraphSAGE [13] and other spatial GNNs, exclusively treats edges as
+weighted aggregation paths, whereas the two-stage message passing ar-
+chitecture, widely adopted in HGNNs, considers only the node-to-edge
+https://doi.org/10.1016/j.patcog.2023.110115
+Received 4 August 2023; Received in revised form 30 September 2023; Accepted 10 November 2023
+
+
+===== PAGE 2 =====
+Pattern Recognition 147 (2024) 110115
+2
+M. Zou et al.
+then edge-to-node mapping procedure, which can lead to suboptimal
+performance in some cases. Therefore, it is in urgent need to develop
+approaches which address these issues and can simultaneously leverage
+both node features and graph/hypergraph topologies.
+Drawing inspiration from Hypergraph Line Expansion [14], which
+treats nodes and edges equally and converts hyperedges into ‘‘line
+nodes’’, our architecture leverages these approaches by treating edges/
+hyperedges as additional nodes and extracting their features from the
+topological relationships of the connected nodes. Edges/hyperedges
+that connect two or more nodes are transformed into additional feature
+vectors, enabling tuning the weights between node features and graph
+structure based on the homophilic extent thus alleviating the curse
+of heterophily. This is efficiently accomplished by using a normalized
+projection matrix, linearly combining the features of connected nodes
+and resulting the edge/hyperedge features. These generated features,
+together with the original node features, are fed into a neural network,
+e.g., MLP, Transformer [15], etc., and its output is processed via
+a reversed transformation, aggregating neighborhood features by the
+transpose of the projection matrix, to obtain the encoded node embed-
+dings, which can be further used for tasks such as node classification.
+The proposed framework, called UniG-Encoder, is demonstrated by
+extensive experiments to outperform the state-of-the-art methods on
+eighteen benchmark datasets with diverse properties. We summarize
+the main contributions of our work as:
+• A universal framework UniG-Encoder is proposed towards repre-
+sentation learning for both graphs and hypergraphs, covering also
+both heterophilic and homophilic circumstances by leveraging
+simultaneously the information of node features and topology.
+• The architecture is realized via an intuitive and interpretable nor-
+malized projection matrix, enabling tuning the weights between
+node features and graph structure based on the homophilic extent,
+which can be easily acquired from a priori knowledge of datasets.
+• A variant version, UniG-Encoder II, is devised to leverage multi-
+hop node information.
+• The designed architecture involves minor computation consump-
+tion but achieves superior performance over the state-of-the-
+art methods on representative datasets, supported by extensive
+analysis and experiments.
+2. Related works
+Graph and Hypergraph Neural Networks. GNNs and HGNNs
+learn informative graph/hypergraph embeddings by leveraging the
+node features and structure. Various variants of GNNs and HGNNs have
+been developed, and we review the most recent advances here.
+Spectral-based approaches interpret graph convolution from the
+perspective of graph signal processing, with the aim of removing noise
+from graph signals or smoothing information among connected nodes.
+GCN [5] applies convolutional operation in the spectral domain to
+input features, generating node embeddings for node classification
+and other downstream tasks. Building upon GCN, GCNII [16] em-
+ploys initial residual and identity mapping to effectively alleviate the
+over-smoothing problem. The spectral-based approach has also been
+extended to deal with hypergraphs, such as HyperGCN [17].
+Spatial-based approaches aggregate messages from neighboring
+nodes via message passing layers, known as Message Passing Neural
+Networks (MPNNs) [18]. GraphSAGE [13] generates node embed-
+dings by aggregating information from a fixed number of neighbors.
+In contrast, GAT [19] uses an attention mechanism to weigh the
+contributions of neighboring nodes and aggregates information from
+these neighbors based on learned weights. Many GNNs have also been
+developed for heterophilic problem, such as H2GCN [20], GGCN [21],
+and GloGNN [22]. In hypergraph representation learning, many works
+use a two-stage message passing process, such as HGNN [23], AllSet
+(AllDeepSets and AllSetTransformer) [24], and UniGCNII [25]. In most
+cases when the number of edges is significantly larger than the number
+of nodes, these two-stage methods suffer from computational burden
+due to enormous intermediate edge embeddings.
+Hypergraph Expansion. In the realm of hypergraph analysis, a
+technique known as hypergraph expansion is often used to transform
+hypergraphs into graphs. One prominent algorithm for hypergraph ex-
+pansion is the clique expansion [11], which generates a graph from hy-
+pergraph by substituting each hyperedge with a clique in the resulting
+graph. Another approach, known as the star expansion algorithm [10],
+creates a graph by introducing a new vertex for every hyperedge, which
+is connected to each vertex in the hyperedge. Line expansion [14] sim-
+plifies the hypergraph by treating nodes and hyperedges as equivalent,
+representing each vertex–hyperedge incident pair as a ‘‘line node’’. The
+expansion methods also bring in additional computational burden due
+to an extra number of edges expanded from hyperedges.
+3. Preliminaries
+In this section, essential concepts, definitions, and notations pertain-
+ing to GNNs and HGNNs are presented.
+A universal representation learning framework for both graphs and
+hypergraphs is proposed in this work, so we adopt a unified represen-
+tation for them here. Both edges and hyperedges are defined as subsets
+of nodes, while an edge is a subset with two elements and a subset
+of hyperedge contains more than two nodes. Therefore, let = (, )
+denote a graph or hypergraph, where is the set of all nodes, and is
+the set of edges or hyperedges defined above.
+For an arbitrary set , the cardinality of it is denoted by ||. A graph
+or hypergraph can be characterized by a || × || incidence matrix
+𝐁, where 𝐁𝑖𝑗=
+{
+1,
+if 𝑣𝑖∈𝑒𝑗
+0,
+otherwise
+with node 𝑣𝑖∈and edge/hyperedge
+𝑒𝑗∈. For 𝑣𝑖∈and 𝑒𝑗∈, their degrees are defined as 𝑑(𝑣𝑖) = ∑
+𝑗𝐁𝑖𝑗
+and 𝛿(𝑒𝑗) = ∑
+𝑖𝐁𝑖𝑗, respectively. 𝐃∈R||×|| and 𝐃∈R||×|| denote
+the diagonal matrices of node degrees and edge degrees, respectively.
+The raw node features is described by matrix 𝐗∈R||×𝐶0, where the 𝑖th
+row vector 𝐱𝑖denotes the ego-feature of node 𝑣𝑖and 𝐶0 is the dimension
+of features.
+4. Methods
+We illustrate here the general architecture of UniG-Encoder for both
+graph and hypergraph representation learning. The key component lies
+in a normalized projection matrix that first forwardly converts the
+topological relationships of connected nodes into edge or hyperedge
+features. The resulting edge/hyperedge features, together with the
+original node features, are fed into a neural network. In this work,
+we use a simple MLP to process these features. The encoded node em-
+beddings are then derived from the reversed transformation, described
+by the transpose of the projection matrix, of the MLP’s output, which
+are subsequently used for node classification task. The architecture of
+UniG-Encoder is summarized in Fig. 1, with the detailed components
+described in the following subsections.
+4.1. Forward projection
+Projected Set. Let 𝑃denote the set induced by the projection
+matrix from the graph/hypergraph = (, ), which is an ordered set
+consisting of two parts. The first part is a permutation of the node set
+and the second part denotes the transformed edge/hyperedge set,
+while the features of the projected set are obtained from the raw node
+features with the projection matrix 𝐏acting on them.
+Projection Matrix. We introduce a seminal version of the pro-
+jection matrix here, whereas it can be redesigned to accommodate
+different homophilic extents of the graphs/hypergraphs. The projection
+matrix 𝐏is the row-wise concatenation of two matrices: the node part
+𝐏and the edge/hyperedge part 𝐏. The former is of size R||×||,
+
+
+===== PAGE 3 =====
+Pattern Recognition 147 (2024) 110115
+3
+M. Zou et al.
+Fig. 1. The architecture of UniG-Encoder. The architecture starts with a forward transformation of the topological relationships of connected nodes into edge or hyperedge
+features via a normalized projection matrix. The resulting edge/hyperedge features, together with the original node features, are fed into a neural network. The encoded node
+embeddings are then derived from the reversed transformation, described by the transpose of the projection matrix, of the network’s output, which can be further used for tasks
+such as node classification. Notably, the MLP can be substituted by advanced neural networks such as the Transformer.
+Table 1
+Statistics of six graph datasets.
+Dataset
+CiteSeer Cora PubMed Cornell Texas Wisconsin
+||
+3,327
+2,708
+19,717
+183
+183
+251
+||
+4,676
+5,278
+44,327
+280
+295
+466
+#Features
+3,703
+1,433
+500
+1,703
+1,703
+1,703
+#Classes
+7
+6
+3
+5
+5
+5
+Homophily score
+0.74
+0.81
+0.80
+0.30
+0.11
+0.21
+which is under most circumstances a unit matrix 𝐈. Practically, it can
+also be a column-wise permutation of 𝐈due to disorder of nodes in
+certain datasets. The latter 𝐏is of size R||×||, whose element 𝐏,𝑖𝑗
+equals to 1 if 𝑣𝑗∈𝑒𝑖and whose other elements are all zero. Therefore,
+𝐏=
+[𝐏
+𝐏
+]
+∈R|𝑃|×||. The above forward projection procedure satisfies
+the following theorem:
+Theorem 1. Assume there is no duplicate edge/hyperedge in a given
+graph/hypergraph = (, ). One can construct a map 𝜙∶∪→𝑃,
+which is bijective under the construction according to the above correspond-
+ing relations as the projection matrix 𝐏, and its inverse exists. This means
+that each node and edge/hyperedge in is uniquely mapped to an element
+in 𝑃, and vice versa.
+4.2. Feature projection
+The projection matrix 𝐏in fact provides a new method for gener-
+ating edge/hyperedge features by linearly combining the features of
+connected nodes, called feature projection. These resulting features,
+together with the original node features, are subsequently fed as input
+to an MLP to obtain new embeddings. Notably, the MLP can be replaced
+by other neural network architectures, such as RNN or Transformer,
+thereby enhancing the flexibility and adaptability of out framework in
+different application scenarios.
+Concretely, for a graph/hypergraph = (, ), the projection matrix
+𝐏is acted on the original node features 𝐗∈R||×𝐶0, yielding the feature
+vectors of the projected set 𝑃, i.e., 𝐇(0) = 𝐏𝐗∈R|𝑃|×𝐶0. In fact,
+𝐇(0) is the concatenation of the permutated node ego-features and the
+generated edge/hyperedge features. Subsequently, 𝐇(0) is fed into an
+𝑙-layer neural network and the embedding for its 𝑘th layer is denoted
+by 𝐇(𝑘) ∈R|𝑃|×𝐶𝑘(𝑘= 1, … , 𝑙).
+4.3. Reversed projection
+The output of the neural network 𝐇(𝑙) is then reversely transformed
+by the transpose of the projection matrix, i.e., 𝐏⊤. In fact, 𝐏⊤
+=
+[
+𝐏⊤
+, 𝐏⊤
+
+]
+∈R||×|𝑃|. Thus the encoded node embeddings used for
+classification can be obtained by 𝐘= 𝐏⊤𝐇(𝑙) ∈R||×𝐶, where 𝐶= 𝐶𝑙
+denotes the number of classes. The resulting rows of 𝐇are obtained
+by taking a weighted summation of the corresponding rows of 𝐇(𝑙),
+where the weights are given by the nonzero elements in each row
+of 𝐏⊤. Here, the matrix 𝐏⊤
+is used to extract representations from
+the ego-embeddings, while 𝐏⊤
+is used to extract representations from
+the edge/hyperedge embeddings. This operation represents an exten-
+sion of the aggregation process from neighbors in message passing
+architecture or the spectral filter in spectral-based architecture, which
+simultaneously leverages both node embeddings and edge/hyperedge
+embeddings. The procedures satisfy the following theorem:
+Theorem 2. Let 𝜎∶→be an arbitrary permutation, thus 𝐏,𝑖𝑗= 𝛿𝑗,𝜎(𝑖),
+where 𝛿𝑖𝑗=
+{
+1,
+if 𝑖= 𝑗
+0,
+otherwise
+. It can be concluded that (𝐏⊤𝐏)𝑖𝑗> 0 if and
+only if 𝑖= 𝑗or ∃𝑒∈such that 𝑣𝑖∈𝑒and 𝑣𝑗∈𝑒.
+This theorem guarantees the exact correspondence during the pro-
+jection process, that is, the encoded embeddings for node 𝑣𝑖exactly
+contains the information from the raw features of node 𝑣𝑖and the
+features of edges/hyperedges containing 𝑣𝑖. This theorem also allows
+𝐏to be the column-wise permutation of the unit matrix 𝐈.
+4.4. Normalization
+The defined projection matrix and its transpose are normalized in
+this framework. During the forward projection, the rows of 𝐏𝐗are
+obtained by taking a weighted summation of the corresponding rows
+of 𝐗, where the weights are given by the nonzero elements in each
+row of 𝐏. The intuition lies in that 𝐏is used to fuse the features of
+connected nodes into the features of edges/hyperedges. Therefore, row
+normalization needs to be performed on 𝐏, i.e.,
+̂𝐏,𝑖𝑗=
+𝐏,𝑖𝑗
+∑||
+𝑘=1 𝐏,𝑖𝑘
+.
+(1)
+Row normalization is also used for the reversed transformation de-
+scribed by 𝐏⊤, i.e.,
+̂𝐏⊤
+𝑖𝑗=
+𝐏⊤
+𝑖𝑗
+∑|𝑃|
+𝑘=1 𝐏⊤
+𝑖𝑘
+.
+(2)
+After normalization, the embeddings of nodes and the embeddings of
+edges/hyperedges they belong to are fused by weighted summation
+into the final encoded embeddings. We also try different normaliza-
+tion methods that trading-off the weights between node features and
+edge/hyperedge features in the experiments and compare their impacts.
+5. Experiments
+5.1. Datasets
+Our framework is designed to accommodate both graphs and hy-
+pergraphs. To demonstrate its effectiveness, extensive experiments are
+
+
+===== PAGE 4 =====
+Pattern Recognition 147 (2024) 110115
+4
+M. Zou et al.
+Table 2
+Statistics of twelve hypergraph datasets.
+Dataset
+Cora
+Citeseer
+Pubmed
+Cora-CA
+DBLP-CA
+ModelNet40
+NTU2012
+House
+Zoo
+20News
+Yelp
+Senate
+||
+2,708
+3,312
+19,717
+2,708
+41,302
+12,311
+2,012
+1,290
+101
+16,242
+50,758
+282
+||
+1,579
+1,079
+7,963
+1,072
+22,363
+12,311
+2,012
+341
+42
+100
+679,302
+315
+#Features
+1,433
+3,703
+500
+1,433
+1,425
+100
+100
+100
+16
+100
+1,862
+2
+#Classes
+7
+6
+3
+7
+6
+40
+67
+2
+7
+4
+9
+2
+Homophily score
+0.897
+0.893
+0.952
+0.803
+0.869
+0.853
+0.752
+0.509
+0.241
+0.461
+0.226
+0.498
+Table 3
+Results on graphs. Mean accuracy (%) ± standard deviation is shown for each method. For each dataset, we mark the winner’s score in bold and highlight the runner-up’s with
+underline.
+Graph
+CiteSeer
+Cora
+PubMed
+Cornell
+Texas
+Wisconsin
+MLP
+74.02 ± 1.90
+75.69 ± 2.00
+87.16 ± 0.37
+81.89 ± 6.40
+80.81 ± 4.75
+85.29 ± 3.31
+GCN
+76.50 ± 1.36
+86.98 ± 1.27
+88.42 ± 0.50
+60.54 ± 5.30
+55.14 ± 5.16
+51.76 ± 3.06
+GCNII
+77.33 ± 1.48
+88.37 ± 1.25
+𝟗𝟎.𝟏𝟓± 𝟎.𝟒𝟑
+77.86 ± 3.79
+77.57 ± 3.83
+80.39 ± 3.40
+GraphSAGE
+76.04 ± 1.30
+86.90 ± 1.04
+88.45 ± 0.50
+75.95 ± 5.01
+82.43 ± 6.14
+81.18 ± 5.56
+GAT
+76.55 ± 1.23
+87.30 ± 1.10
+86.33 ± 0.48
+61.89 ± 5.05
+52.16 ± 6.63
+49.41 ± 4.09
+LINKX
+73.19 ± 0.99
+84.64 ± 1.13
+87.86 ± 0.77
+77.84 ± 5.81
+74.60 ± 8.37
+75.49 ± 5.72
+H2GCN
+77.07 ± 1.64
+87.81 ± 1.35
+89.59 ± 0.33
+82.16 ± 6.00
+82.16 ± 5.28
+86.67 ± 4.69
+GGCN
+77.14 ± 1.45
+87.95 ± 1.05
+89.15 ± 0.37
+85.68 ± 6.63
+84.86 ± 4.55
+86.86 ± 3.29
+WRGAT
+76.81 ± 1.89
+88.20 ± 2.26
+88.52 ± 0.92
+81.62 ± 3.90
+83.62 ± 5.50
+86.98 ± 3.78
+GloGNN
+77.41 ± 1.65
+88.31 ± 1.13
+89.62 ± 0.35
+85.95 ± 5.10
+84.32 ± 4.15
+87.06 ± 3.53
+UniG-Encoder
+77.33 ± 1.86
+87.36 ± 1.17
+89.76 ± 0.46
+86.75 ± 6.56
+85.40 ± 5.3
+𝟖𝟖.𝟎𝟑± 𝟒.𝟒𝟐
+UniG-Encoder II
+𝟕𝟕.𝟕𝟖± 𝟏.𝟕𝟔
+𝟖𝟖.𝟒𝟗± 𝟏.𝟏𝟐
+89.84 ± 0.42
+𝟖𝟕.𝟖𝟒± 𝟓.𝟗𝟓
+𝟖𝟓.𝟗𝟓± 𝟑.𝟗𝟕
+87.84 ± 3.90
+conducted on various benchmark datasets. We briefly introduce the
+datasets used in this work, with their detailed information listed in
+Appendix A.
+Graph Datasets. Six real-world graph datasets with different ho-
+mophilic extents are used and their statistics are listed in Table 1.
+Hypergraph Datasets. Twelve benchmark hypergraph datasets are
+used in this work with diverse scales, structures, and homophilic ex-
+tents. Their statistics are listed in Table 2.
+5.2. Baselines and settings
+We compare our UniG-Encoder framework with several classic
+graph-oriented models, including (1) MLP; (2) general GNN methods:
+GCN [5], GAT [19], GCNII [16], GraphSAGE [13]; (3) heterophily-
+oriented methods: H2GCN [20], WRGAT [26], LINKX [27], GGCN [21],
+GloGNN [22], across various benchmark datasets. To conduct these
+experiments, we adopt ten random splits with a ratio of 48%/32%/20%
+of nodes per class for training/validation/test, as previously established
+in [22]. We evaluate the performance by computing the overall mean
+accuracy and standard deviation on the test sets over the ten splits.
+We also present a comparative analysis of our proposed frame-
+work UniG-Encoder against several state-of-the-art models on hyper-
+graph benchmarks, including HGNN [23], HCHA [8], HNHN [28],
+HyperGCN [17], UniGCNII [25], AllSet (AllDeepSets and AllSetTrans-
+former) [24], ED-HNN [12], and LE-GCN [14]. To ensure a fair com-
+parison, we follow the experimental protocols of ED-HNN for the
+hypergraph datasets experiments. Specifically, we split the data into
+training, validation, and test sets in a 50%/25%/25% ratio, as sug-
+gested in [24]. We adopt prediction accuracy as evaluation metric and
+run each model ten times with different training and validation splits
+to obtain the mean accuracy and standard deviation.
+6. Results and analysis
+Overall Performance Analysis. We present our experimental re-
+sults on six graph datasets in Table 3. It is noted that general GNN
+models such as GCN, GAT, GCNII, and GraphSAGE perform well on
+homophilic datasets such as CiteSeer, Cora, and PubMed, but
+their performance deteriorates on heterophilic datasets such as Cor-
+nell, Texas, and Wisconsin, even outperformed by simple models
+such as MLP. Our proposed framework not only achieves competitive
+performance compared to general GNNs, but also outperforms some
+heterophily-oriented models such as H2GCN, GGCN, and GloGNN,
+by adjusting the weights in the projection matrix 𝐏. Details on this
+adjustment can be found in Appendix A.
+Table 4 illustrates the results of our comparative analysis, demon-
+strating that our proposed UniG-Encoder and its variant UniG-Encoder
+II well performs on all twelve hypergraph datasets, compared to exist-
+ing models. The top-performing baseline models include AllSetTrans-
+former, ED-HNN, MLP, and LEGCN, etc. However, their performance
+varies significantly across different datasets. For instance, AllSetTrans-
+former, AllDeepSets, UniGCNII, and ED-HNN exhibit promising results
+on homophilic hypergraph datasets such as citation networks, but their
+performance are subpar on heterophilic datasets, such as House and
+Senate, where MLP and LEGCN perform much better. In contrast, our
+framework achieves consistently superior results. The out-of-memory
+(OOM) issue in LE-GCN is caused by line expansion, which generates
+‘‘line nodes’’ from hyperedges. In datasets such as Yelp, which contain
+a large number of hyperedges, OOM error may also occur due to
+memory constraint.
+Impacts of Normalization. We compare five types of normal-
+ization here, including (1) no normalization for 𝐏and 𝐏⊤, (2) row
+normalization for 𝐏and 𝐏⊤, (3) column normalization for 𝐏and 𝐏⊤,
+(4) row normalization for 𝐏and column normalization for 𝐏⊤, and
+(5) column normalization for 𝐏and row normalization for 𝐏⊤. We
+conduct experiments on the Cora hypergraph dataset. It is indicated
+that normalizing 𝐏and 𝐏⊤by row produces the best results (79.01±1.40,
+80.64 ± 1.62, 80.22 ± 0.76, 80.03 ± 0.97, 80.25 ± 1.17 for types (1)–(5)
+respectively). This finding is also consistent with our design of 𝐏,
+which represents a weighted average on edges/hyperedges, while 𝐏⊤
+is used to aggregate the embeddings of the nodes and their neighbors.
+Impacts of weight on 𝐏. Our UniG-Encoder enables tuning the
+weight on 𝐏to accommodate various scenarios, especially with dif-
+ferent homophilic extents. It is our technique to set the nonzero values
+in 𝐏to be larger for heterophilic graphs and smaller for homophilic
+graphs. Heterophily refers to a situation where a node’s neighbors
+are substantially different from the node itself. In this case, when
+performing operations such as summation or averaging on the features
+of a node and its neighbors, the ego-feature should dominate. In our
+approach, this can be simply realized by modifying the nonzero values
+in 𝐏to control the weights of features from the node itself and its
+neighbors. This technique also enables a performance enhancement
+of our framework on heterophilic datasets. To validate, we conduct
+
+
+===== PAGE 5 =====
+Pattern Recognition 147 (2024) 110115
+5
+M. Zou et al.
+Fig. 2. Performance with different nonzero values in 𝐏. The legends in (b) correspond to the Homophily Scores of the synthetic datasets.
+Table 4
+Results on hypergraphs. Mean accuracy (%) ± standard deviation is shown for each method. For each dataset, we mark the winner’s score in bold and highlight the runner-up’s
+with underline. ‘‘OOM’’ denotes out-of-memory issue.
+Hypergraph
+Cora
+Citeseer
+Pubmed
+Cora-CA
+DBLP-CA
+ModelNet40
+HGNN
+79.39 ± 1.36
+72.45 ± 1.16
+86.44 ± 0.44
+82.64 ± 1.65
+91.03 ± 0.20
+95.44 ± 0.33
+HCHA
+79.14 ± 1.02
+72.42 ± 1.42
+86.41 ± 0.36
+82.55 ± 0.97
+90.92 ± 0.22
+94.48 ± 0.28
+HNHN
+76.36 ± 1.92
+72.64 ± 1.57
+86.90 ± 0.30
+77.19 ± 1.49
+86.78 ± 0.29
+97.84 ± 0.25
+HyperGCN
+78.45 ± 1.26
+71.28 ± 0.82
+82.84 ± 8.67
+79.48 ± 2.08
+89.38 ± 0.25
+75.89 ± 5.26
+UniGCNII
+78.81 ± 1.05
+73.05 ± 2.21
+88.25 ± 0.40
+83.60 ± 1.14
+91.69 ± 0.19
+98.07 ± 0.23
+AllDeepSets
+76.88 ± 1.80
+70.83 ± 1.63
+88.75 ± 0.33
+81.97 ± 1.50
+91.27 ± 0.27
+96.98 ± 0.26
+AllSetTransformer
+78.58 ± 1.47
+73.08 ± 1.20
+88.72 ± 0.37
+83.63 ± 1.47
+91.53 ± 0.23
+98.20 ± 0.20
+ED-HNN
+80.31 ± 1.35
+73.70 ± 1.38
+𝟖𝟗.𝟓𝟔± 𝟎.𝟔𝟐
+83.97 ± 1.55
+𝟗𝟏.𝟗𝟑± 𝟎.𝟐𝟗
+98.35 ± 0.20
+LE-GCN
+77.34 ± 1.10
+73.41 ± 1.15
+88.53 ± 0.48
+76.60 ± 1.63
+85.82 ± 0.31
+96.68 ± 0.16
+MLP
+77.49 ± 1.43
+73.99 ± 0.85
+88.50 ± 0.39
+77.40 ± 1.38
+85.85 ± 0.43
+96.70 ± 0.23
+UniG-Encoder
+81.43 ± 1.37
+75.08 ± 1.45
+88.98 ± 0.37
+85.58 ± 1.13
+91.65 ± 0.15
+98.41 ± 0.17
+UniG-Encoder II
+𝟖𝟐.𝟐𝟐± 𝟏.𝟎𝟖
+𝟕𝟓.𝟐𝟖± 𝟏.𝟒𝟖
+89.04 ± 0.45
+𝟖𝟓.𝟖𝟖± 𝟏.𝟎𝟐
+91.87 ± 0.23
+𝟗𝟖.𝟔𝟎± 𝟎.𝟏𝟓
+Hypergraph
+NTU2012
+Zoo
+20Newsgroups
+Yelp
+House
+Senate
+HGNN
+87.72 ± 1.35
+95.50 ± 4.58
+80.33 ± 0.42
+33.04 ± 0.62
+61.39 ± 2.96
+48.59 ± 4.52
+HCHA
+87.48 ± 1.87
+93.65 ± 6.15
+80.33 ± 0.80
+30.99 ± 0.72
+61.36 ± 2.53
+48.62 ± 4.41
+HNHN
+89.11 ± 1.44
+93.59 ± 5.88
+81.35 ± 0.61
+31.65 ± 0.44
+67.80 ± 2.59
+50.93 ± 6.33
+HyperGCN
+56.36 ± 4.86
+85.38 ± 6.23
+81.05 ± 0.59
+29.42 ± 1.54
+48.32 ± 2.93
+42.45 ± 3.67
+UniGCNII
+89.30 ± 1.33
+93.65 ± 4.37
+81.12 ± 0.67
+31.70 ± 0.52
+67.25 ± 2.57
+49.30 ± 4.25
+AllDeepSets
+88.09 ± 1.52
+95.39 ± 4.77
+81.06 ± 0.54
+30.36 ± 1.57
+67.82 ± 2.40
+48.17 ± 5.67
+AllSetTransformer
+88.69 ± 1.24
+97.50 ± 3.59
+81.38 ± 0.58
+𝟑𝟔.𝟖𝟗± 𝟎.𝟓𝟏
+69.33 ± 2.20
+51.83 ± 5.22
+ED-HNN
+88.07 ± 1.28
+95.77 ± 3.37
+81.90 ± 0.55
+34.99 ± 0.55
+72.45 ± 2.28
+64.79 ± 5.14
+LE-GCN
+89.16 ± 1.13
+95.00 ± 4.81
+81.84 ± 0.34
+OOM
+78.39 ± 1.64
+80.70 ± 5.67
+MLP
+89.08 ± 1.58
+94.62 ± 4.51
+81.42 ± 0.49
+32.67 ± 0.32
+78.79 ± 2.28
+79.72 ± 3.40
+UniG-Encoder
+90.42 ± 1.49
+𝟗𝟖.𝟒𝟔± 𝟑.𝟕𝟏
+81.74 ± 0.54
+36.33 ± 0.28
+78.73 ± 2.00
+80.56 ± 3.86
+UniG-Encoder II
+𝟗𝟎.𝟖𝟎± 𝟏.𝟑𝟓
+98.08 ± 2.72
+𝟖𝟏.𝟗𝟕± 𝟎.𝟑𝟔
+35.74 ± 0.49
+𝟕𝟗.𝟎𝟕± 𝟐.𝟑𝟒
+𝟖𝟏.𝟒𝟏± 𝟓.𝟒𝟕
+experiments on both real-world datasets and synthetic datasets ob-
+tained from Texas. The results are depicted in Fig. 2. As illustrated
+in Fig. 2(a), for datasets Pubmed, Cora, and Citeseer with high
+degree of homophily, the variation in the nonzero values of 𝐏has
+minor impact on their performance in the node classification task. This
+result aligns with our intuition that when a node and its neighbors have
+consistent features, the contribution of neighbors to the aggregated
+embeddings should be similar to that of the node itself. However, in
+a heterophilic graph where nodes and their neighbors have different
+categories, achieving better classification performance requires a trade-
+off between ego-features and the features of neighbors. Consequently,
+excessively small or large nonzero values in 𝐏will both result in
+suboptimal accuracy, as depicted in Fig. 2(b).
+Impacts of Projection Placement. In fact, the projection operation
+with its reverse in our framework can be placed at any layer of the
+neural network pipeline. We present experiments placing projection
+and its reverse (denoted by ‘‘⋅& ⋅’’) at different layers of a three-
+layer MLP, and the results are shown in Table 5. Although the effect
+of placing projection at different layers is not that significant, we em-
+phasize that two variants, 𝐏𝐗&𝐏⊤𝐇(𝟎) and 𝐏𝐇(𝟏)&𝐏⊤𝐇(𝟐), which in fact
+successively execute forward projection and its reverse by multiplying
+the embeddings by 𝐏⊤𝐏, which can be regarded as a decomposition of
+Table 5
+Results of different projection placement.
+Variant
+Cora
+Citeseer
+Pubmed
+House
+No Projection
+75.47 ± 1.27
+73.47 ± 1.05
+88.41 ± 0.54
+76.93 ± 2.67
+𝐏𝐗& 𝐏⊤𝐇(𝟎)
+79.97 ± 1.14
+74.12 ± 1.09
+88.68 ± 0.48
+77.00 ± 2.99
+𝐏𝐗& 𝐏⊤𝐇(𝟏)
+80.34 ± 1.22
+74.35 ± 1.09
+88.70 ± 0.50
+76.44 ± 3.46
+𝐏𝐗& 𝐏⊤𝐇(𝟐)
+80.31 ± 1.17
+74.36 ± 1.09
+88.73 ± 0.41
+76.44 ± 3.46
+𝐏𝐇(𝟎) & 𝐏⊤𝐇(𝟏)
+80.64 ± 1.19
+74.44 ± 1.25
+88.60 ± 0.42
+77.21 ± 2.68
+𝐏𝐇(𝟎) & 𝐏⊤𝐇(𝟐)
+80.66 ± 1.21
+74.43 ± 1.24
+88.66 ± 0.61
+77.24 ± 2.68
+𝐏𝐇(𝟏) & 𝐏⊤𝐇(𝟐)
+80.44 ± 1.00
+74.44 ± 1.25
+88.60 ± 0.42
+77.24 ± 2.68
+the adjacency matrix [29,30], practically do not increase the time com-
+plexity. It is worth noting that the framework can be easily extended
+to utilize multi-hop neighborhood information by using multiple 𝐏⊤𝐏.
+To leverage multi-hop node information, we introduce UniG-Encoder
+II, with detailed information provided in Appendix C.
+Complexity Analysis. Assume that the dimensions of all 𝐿layers
+are the same, and the dimensions of input and output denoting as 𝑑and
+𝑑′ respectively. For the task of node classification in a graph consisting
+of 𝑁nodes, the time complexity of using an MLP is (𝐿𝑁𝑑𝑑′) without
+adopting any sparse matrix technique. Generally, the time complexity
+of using a GNN is (𝐿𝑁2𝑑′ + 𝐿𝑁𝑑𝑑′), extra consuming (𝑁2𝑑′) in
+
+
+===== PAGE 6 =====
+Pattern Recognition 147 (2024) 110115
+6
+M. Zou et al.
+each layer compared to MLP. For the proposed UniG-Encoder, denote
+𝐐= 𝐏⊤𝐏, which has the same dimension as the adjacency matrix
+𝐀∈R𝑁×𝑁. Practically, during an epoch of UniG-Encoder, matrix 𝐐
+is multiplied to the embeddings only once, thus the time complexity
+of UniG-Encoder is (𝑁2𝑑′ + 𝐿𝑁𝑑𝑑′). Moreover, the time complexity
+of UniG-Encoder II is (𝑁2𝑑′ + 𝐿𝑁𝑑𝑑′ + 𝑁𝑘𝑑′), where 𝑘represents
+the number of input channels in the 1 × 1 convolution, denoting the
+number of used hops.
+Advantages and Limitations. The advantages of the UniG-Encoder
+method lie in its simplicity, generality, efficiency, and flexibility. By
+combining two matrices, 𝐏and 𝐏⊤, with MLP, it significantly enhances
+the performance in node classification tasks for both graphs and hy-
+pergraphs, compared to the original MLP. Moreover, it simultaneously
+and comprehensively exploits the node features and graph/hypergraph
+topologies in an efficient and unified manner, covering both het-
+erophilic and homophilic graphs. Existing limitations of UniG-Encoder
+include that when 𝐏and 𝐏⊤are used separately and the number
+of edges/hyperedges significantly exceeds the number of nodes, the
+model may suffer from substantial computational and memory over-
+head. Additionally, the construction of 𝐏for handling heterophily
+relies on prior analysis of the dataset and manual adjustment of
+hyperparameters.
+7. Conclusion
+Graph and hypergraph representation learning has attracted in-
+creasing attention from various research fields. Focusing on a unified
+representation learning framework for graphs and hypergraphs, we
+introduce a novel, simple, and efficient architecture termed UniG-
+Encoder in this research. In contrast to the traditional spectral-based
+and/or message passing approaches, our proposed framework simul-
+taneously and comprehensively exploits the node features and graph/
+hypergraph topologies in an efficient and unified manner, covering
+both heterophilic and homophilic graphs. The designed projection ma-
+trix, serving as key encoder to the graph features, is intuitive and
+interpretable. We conduct experiments on various graph and hyper-
+graph datasets with different scales, structures, and homophilic extents.
+Moreover, a variant version, UniG-Encoder II, is devised to leverage
+multi-hop node information. The experimental results and comparisons
+with the state-of-the-art methods demonstrate superior performance of
+the proposed UniG-Encoder and UniG-Encoder II. Our framework effec-
+tively unifies representation learning for both graphs and hypergraphs.
+Evident research direction includes exploring methods to achieve uni-
+versal contrastive learning on graphs and hypergraphs through data
+augmentation. The framework can also lead to potential applications
+in many tasks, such as graph classification and link prediction.
+Declaration of competing interest
+The authors declare that they have no known competing finan-
+cial interests or personal relationships that could have appeared to
+influence the work reported in this paper.
+Data availability
+Data will be made available on request.
+Acknowledgments
+This work is supported by the National Natural Science Founda-
+tion of China (No. 12101133) and Shanghai Sailing Program (No.
+21YF1402300). This work is also supported by Shanghai Municipal
+Science and Technology Major Project (No. 2021SHZDZX0103).
+Appendix A. Proofs
+A.1. Proof of Theorem 1
+Proof. Let 𝜎∶→be an arbitrary permutation. The map 𝜙can be
+constructed as follows: for 𝑣∈, let 𝜙(𝑣) = 𝜎(𝑣); for 𝑒∈, let 𝜙(𝑒) = 𝑒.
+As there is no duplicate edge/hyperedge in , it is clear that 𝜙|= 𝜎
+and 𝜙is an identity map on . Because 𝜎and the identity map are
+bijective and ∩= ∅, the map 𝜙is also bijective.
+A.2. Proof of Theorem 2
+Proof.
+Note that 𝐏⊤
+,𝑖𝑗= 𝛿𝑖,𝜎(𝑗). Thus (𝐏⊤
+𝐏)𝑖𝑗= ∑||
+𝑘=1 𝐏⊤
+,𝑖𝑘𝐏,𝑘𝑗=
+∑||
+𝑘=1 𝛿𝑖,𝜎(𝑘)𝛿𝑗,𝜎(𝑘) = 𝛿𝑖𝑗, which means that 𝐏⊤
+𝐏= 𝐈. Note also that
+𝐏,𝑖𝑗equals to 1 if 𝑣𝑗∈𝑒𝑖. Thus 𝐏⊤
+,𝑖𝑗= 1 if 𝑣𝑖∈𝑒𝑗. It follows that
+(𝐏⊤
+𝐏)𝑖𝑗= ∑||
+𝑘=1 𝐏⊤
+,𝑖𝑘𝐏,𝑘𝑗= ∑||
+𝑘=1 1{𝑣𝑖∈𝑒𝑘}1{𝑣𝑗∈𝑒𝑘}, where 1{⋅} is the
+indicator function. Therefore, 𝐏⊤𝐏=
+[
+𝐏⊤
+, 𝐏⊤
+
+] [𝐏
+𝐏
+]
+= 𝐏⊤
+𝐏+ 𝐏⊤
+𝐏=
+𝐈+ 𝐏⊤
+𝐏. This indicates that (𝐏⊤𝐏)𝑖𝑗> 0 if and only if 𝐈𝑖𝑗> 0 or
+(𝐏⊤
+𝐏)𝑖𝑗> 0, which proves the theorem.
+Appendix B. A schematic example
+We provide here a schematic example to show the intuition and
+interpretability of the projection matrix. For the hypergraph shown in
+Fig. 1 of the main text, the incidence matrix
+𝐁=
+⎡
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢⎣
+1
+0
+0
+1
+0
+0
+1
+1
+0
+0
+1
+0
+1
+0
+1
+0
+0
+1
+0
+0
+1
+⎤
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥⎦
+.
+Thus the projection matrix without permutation on 𝐏is
+𝐏=
+⎡
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢⎣
+1
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+1
+1
+1
+1
+0
+1
+0
+0
+0
+0
+1
+1
+0
+0
+0
+0
+0
+0
+0
+1
+1
+1
+⎤
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥⎦
+and its transpose is
+𝐏⊤=
+⎡
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢⎣
+1
+0
+0
+0
+0
+0
+0
+1
+0
+0
+0
+1
+0
+0
+0
+0
+0
+1
+0
+0
+0
+0
+1
+0
+0
+0
+0
+1
+1
+0
+0
+0
+0
+1
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+1
+0
+0
+1
+0
+1
+0
+0
+0
+0
+0
+1
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+1
+0
+0
+1
+⎤
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥⎦
+.
+The compound matrix thus satisfies
+𝐏⊤𝐏= [𝐈, 𝐁]
+[ 𝐈
+𝐁⊤
+]
+= 𝐈+ 𝐁𝐁⊤=
+⎡
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢⎣
+2
+1
+1
+0
+1
+0
+0
+1
+2
+1
+0
+1
+0
+0
+1
+1
+3
+1
+1
+0
+0
+0
+0
+1
+2
+0
+0
+0
+1
+1
+1
+0
+3
+1
+1
+0
+0
+0
+0
+1
+2
+1
+0
+0
+0
+0
+1
+1
+2
+⎤
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥⎦
+.
+
+
+===== PAGE 7 =====
+Pattern Recognition 147 (2024) 110115
+7
+M. Zou et al.
+Note that the adjacency matrix 𝐀of a graph or hypergraph is defined
+as 𝐁𝐁⊤, where 𝐀𝑖𝑗represents the number of edges/hyperedges shared
+between nodes 𝑣𝑖and 𝑣𝑗. Therefore, 𝐏⊤𝐏= 𝐈+ 𝐀.
+Regarding to the normalization process, the compound row normal-
+ized matrix is
+̂𝐏⊤̂𝐏= [𝐈+ 𝐃
+]−1 [𝐈, 𝐁]
+[ 𝐈
+𝟎
+𝟎
+𝐃
+−1
+] [ 𝐈
+𝐁⊤
+]
+= [𝐈+ 𝐃
+]−1 [𝐈, 𝐁]
+[
+𝐈
+𝐃
+−1𝐁⊤
+]
+= [𝐈+ 𝐃
+]−1 [𝐈+ 𝐁𝐃
+−1𝐁⊤] ,
+where [𝐈+ 𝐃
+]−1 represents the row normalization factor for 𝐏⊤and
+[ 𝐈
+𝟎
+𝟎
+𝐃
+−1
+]
+for 𝐏.
+Appendix C. Unig-encoder II
+Here we design a variant model, UniG-Encoder II, which can lever-
+age multi-hop node information. For simplicity, activation function and
+dropout procedures are removed from description. The UniG-Encoder
+II model takes the feature matrix as inputs, as well as the projection
+matrix. It performs a multi-hop aggregation process to iteratively up-
+date the node embeddings. These embeddings are then concatenated
+and processed via a 1 × 1 convolutional layer to generate the final
+node embeddings. The implementation procedures can be summarized
+as Algorithm 1.
+Algorithm 1 UniG-Encoder II.
+Input: the feature matrix 𝐗, the projection matrix 𝐏, the number of
+training epochs , the number of hops 
+Output: model parameter 𝜃
+Calculate 𝐐as the result of 𝐏⊤𝐏
+for 𝑡= 1, 2, ⋯, do
+Compute 𝐇(0) from the feature matrix 𝐗using a dense layer
+for 𝑘= 1, 2, ⋯, do
+Compute 𝐇(𝑘) by multiplying 𝐐to 𝐇(𝑘−1)
+end for
+Generate embeddings 𝐇as 𝐇= CONV1×1(𝐇(0)||𝐇(1)|| ⋯||𝐇(𝐾))
+Obtain the final embeddings 𝐘from 𝐇using a dense layer
+Calculate the loss with the final embeddings 𝐘
+Optimize 𝜃by minimizing the loss using gradient descent
+end for
+return model parameter 𝜃
+Appendix D. Graph and hypergraph datasets
+We utilize a total of 6 representative graph datasets and 12 bench-
+mark hypergraph datasets sourced from the existing literatures, with
+their statistics listed in Tables 1 and 2 of the main text. Here we
+describe the detailed information of these datasets.
+The graph datasets include Cora, Citeseer, Pubmed, Texas,
+Wisconsin, and Cornell [31]. The Cora, Citeseer, and Pubmed
+datasets consist of citation graphs where nodes represent papers and
+edges denote the citation or quotation relationships between them.
+These graphs employ bag-of-words representations as the feature vec-
+tors for the nodes, indicating the presence of corresponding words from
+the dictionary in the papers. The labels in these datasets correspond
+to the classes or fields of the papers. The Texas, Wisconsin, and
+Cornell datasets comprise web pages collected from the computer
+science departments of their respective universities. In these datasets,
+nodes represent web pages, while edges represent hyperlinks con-
+necting them. Each page in these datasets also employs bag-of-words
+representations as the feature vectors for the nodes, indicating the
+existence of corresponding words from the dictionary.
+The benchmark hypergraph datasets include Cora, Citeseer,
+Pubmed, Cora-CA, DBLP-CA, 20Newsgroups, Zoo, ModelNet40,
+NTU2012, Yelp, House, and Senate. The co-citation networks
+Cora, Citeseer, and Pubmed, are obtained from [17], in which
+all documents cited by a document are connected by a hyperedge.
+The co-authorship networks Cora-CA and DBLP-CA are also obtained
+from [17], in which all documents co-authored by an author are con-
+nected by a hyperedge. In these co-citation and co-authorship networks
+datasets, the node features consist of bag-of-words representations of
+the corresponding documents, and node labels are the paper classes.
+The 20Newsgroups and Zoo datasets are obtained from the UCI
+Categorical Machine Learning Repository [32]. In the 20Newsgroups
+dataset, the node features consist of TF-IDF representations of news
+messages. In the Zoo dataset, the node features are combinations of
+categorical and numerical measurements describing various animals.
+Two public 3D object datasets in computer vision, namely Model-
+Net40 [33] and NTU2012 [34], are utilized. The former comprises
+of 12,311 3D objects from 40 categories, while the latter consists of
+2,012 3D shapes from 67 categories. The two datasets feature visual
+objects with extracted features using the Group-View Convolutional
+Neural Network (GVCNN) [35] and the Multi-View Convolutional
+Neural Network (MVCNN) [36]. The construction of the hypergraphs
+follows the methodology described in [14,23]. The Yelp, House, and
+Senate datasets are introduced in [24,37]. Using the ‘‘restaurant’’
+catalog in Yelp, all businesses are selected as nodes, and hyperedges
+are formed by selecting restaurants visited by the same user. The node
+labels, representing the average review of a restaurant, are derived
+from the numbers of rating stars, ranged from 1 to 5 stars with
+an interval of 0.5 star. The node features are constructed using the
+latitude, longitude, city, state (encoded as one-hot vectors), and bag-
+of-words encodings of the top-1000 words in the restaurant names. In
+the House dataset, each node represents a member of the US House
+of Representatives, and hyperedges are formed by grouping together
+members of the same committee. The node labels indicate the political
+party affiliation of the representatives. As the original House dataset
+lacks node features, they are generated using Gaussian random vectors,
+following a similar approach of the contextual stochastic block model.
+The feature vectors are fixed at a dimension of 100, and the features
+are obtained by applying one-hot encodings to the labels, with Gaussian
+noise (𝟎, 𝜎2𝐈) added. The standard deviation of the noise, 𝜎, is set to 1
+here. In Senate dataset, nodes are US Congressperson and hyperedges
+are comprised of the sponsors and co-sponsors of bills put forth in
+the Senate. Each node in the datasets is labeled with political party
+affiliation.
+Appendix E. Experimental settings
+All the experiments are conducted on a Linux machine running
+Ubuntu 18.04, equipped with eight NVIDIA 3090ti GPUs with 24 GB
+memory. To ensure a fair comparison, we follow the same train-
+ing recipe as [12,24]. Adam optimizer [38] with fixed learning rate
+and weight decay across epochs is utilized to minimize the cross-
+entropy loss function. The models are trained for 500 epochs for
+all datasets. Dropout is applied to prevent overfitting, and ReLU is
+chosen as the nonlinear activation function. The best hyperparame-
+ters are determined using Optuna [39] with 200 trails. The search
+range includes the number of hops in a multi-hop setting, which is
+{2, 3, 5, 10}, as well as the number of layers chosen from {1, 2}, and hid-
+den dimensions selected from {64, 128, 256, 512}. We tune the learning
+rate from the set {0.1, 0.02, 0.01, 0.001, 0.0001}, the weight decay from
+{0, 0.005, 0.0005, 0.00005}, and the dropout rate from {0, 0.5, 0.7, 0.9}.
+The initial nonzero values of 𝐏are set to either {1, 10, 100, 0.1, 0.001,
+0.0001} or 𝑑𝑖×{1, 10, 100, 0.1, 0.001, 0.0001}, where 𝑑𝑖is the 𝑖th diagonal
+value of 𝐃. 𝐏and 𝐏⊤are row normalized. The reported standard
+deviations are calculated by conducting experiments on ten different
+data splits.
+
+
+===== PAGE 8 =====
+Pattern Recognition 147 (2024) 110115
+8
+M. Zou et al.
+Fig. G.3. Performance of different models with deeper layers on three benchmark datasets.
+Fig. H.4. Experiments on synthetic datasets based on Texas. The horizontal axis denote the probability of adding node to an existing edge. The numbers attached to the curves
+denote the corresponding values of probability one. The numerical value indicated in the legend of (a)(c), e.g., ‘‘syn-hypergraph-3’’, corresponds to the rank of each hyperedge in
+the synthetic hypergraphs. The numerical value indicated in the legend of (b), e.g., ‘‘syn-graph-3’’, corresponds to the graph obtained from the corresponding synthetic hypergraph,
+as stated in the text. The homophily score is calculated based on the clique expansion of hypergraphs.
+Table F.6
+Sensitivity to hidden dimension on Pubmed hypergraph dataset.
+Model
+512
+256
+128
+64
+AllDeepSets
+88.75 ± 0.33
+88.41 ± 0.37
+87.50 ± 0.42
+86.78 ± 0.40
+AllSetTransformer
+88.72 ± 0.37
+88.16 ± 0.24
+87.36 ± 0.23
+86.21 ± 0.25
+ED-HNN
+89.03 ± 0.53
+88.74 ± 0.38
+88.84 ± 0.38
+88.76 ± 0.24
+UniG-Encoder
+88.98 ± 0.37
+88.82 ± 0.40
+88.83 ± 0.48
+88.46 ± 0.23
+Appendix F. Sensitivity to hidden dimension
+We perform comparison study on the expressivity of UniG-Encoder
+versus the hidden dimension of the MLP, as shown in Table F.6, where
+we use different hidden dimensions and evaluate the performance on
+the Pubmed hypergraph dataset. We also compare our framework with
+the top-performing baselines, namely AllDeepSets, AllSetTransformer,
+and ED-HNN. Remarkably, our model with a hidden dimension of 128
+achieves comparable results to the 512-width AllSet models and shows
+performance on par with the ED-HNN model. These results indicate that
+our UniG-Encoder exhibits good tolerance for low hidden dimension,
+which can be attributed to its enhanced expressive power via the
+normalized projection matrix.
+Appendix G. Over-smoothing analysis
+GNNs encounter over-smoothing problem when they are extended
+to deeper architectures. The mixing of node embeddings from different
+classes results in a decline in GNNs performance, due to the excessive
+aggregation of neighborhood information. Fig. G.3 illustrates that as
+the models go deeper, their overall performance deteriorates due to
+over-smoothing.
+Table H.7
+Corresponding homophily scores for different probabilities of adding node to an existing
+edge and different ranks of synthetic hypergraphs.
+Probability
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0
+Rank 3
+0.06
+0.14
+0.21
+0.25
+0.28
+0.30
+0.32
+0.34
+0.35
+0.36
+0.37
+Rank 4
+0.06
+0.26
+0.36
+0.42
+0.44
+0.46
+0.49
+0.50
+0.51
+0.52
+0.53
+Rank 5
+0.06
+0.37
+0.48
+0.54
+0.56
+0.57
+0.60
+0.60
+0.61
+0.62
+0.62
+Rank 6
+0.06
+0.46
+0.57
+0.62
+0.64
+0.65
+0.66
+0.66
+0.67
+0.68
+0.68
+Rank 7
+0.06
+0.54
+0.64
+0.68
+0.69
+0.70
+0.71
+0.71
+0.72
+0.72
+0.73
+Appendix H. Synthetic graph and hypergraph datasets
+The proposed framework utilizes a universal architecture for both
+graphs and hypergraphs with difference lying in the construction of
+the 𝐏matrix. 𝐏contains at most two nonzero elements per row for
+graphs, whereas for hypergraphs it contains three or more nonzero ele-
+ments per row. In practise, an important question is the conversion be-
+tween graphs and hypergraphs. To guarantee as high homophilic extent
+as possible when synthesizing hypergraphs from graphs, a technique is
+to add certain node to existing edge with a probability, which has same
+label with at least one of the original nodes in the edge. Our experi-
+ments on synthesized hypergraphs show that this approach significantly
+increases the homophilic extent, leading to improved performance, see
+Fig. H.4(a). We also provide the corresponding homophily scores for
+different probabilities of adding node to an existing edge and different
+ranks of synthetic hypergraphs in Table H.7.
+Moreover, to compare the performance of our UniG-Encoder on
+graphs and hypergraphs that have same homophilic extent, based
+on the above synthesized hypergraph datasets, we obtain the graph
+datasets with same homophilic extent by adding new edges that be-
+long to the clique expansion of the corresponding hyperedges in the
+synthesized hypergraph datasets. Here to ensure a fair comparison, we
+fix the training hyperparameters, such as the learning rate of 0.001 and
+
+
+===== PAGE 9 =====
+Pattern Recognition 147 (2024) 110115
+9
+M. Zou et al.
+Table H.8
+Performance on synthetic graph and hypergraph datasets with different probability of adding node to an existing edge.
+Probability
+0.0
+0.1
+0.2
+0.3
+0.4
+syn-graph-3
+70.54 ± 6.99
+71.08 ± 5.68
+74.05 ± 4.05
+75.68 ± 5.13
+75.68 ± 4.83
+syn-hypergraph-3
+70.54 ± 6.99
+69.19 ± 6.42
+70.08 ± 5.93
+71.89 ± 6.07
+73.51 ± 6.49
+syn-graph-4
+70.54 ± 6.99
+75.95 ± 4.43
+80.00 ± 6.19
+81.35 ± 6.22
+84.05 ± 6.10
+syn-hypergraph-4
+70.54 ± 6.99
+72.43 ± 6.60
+77.84 ± 6.71
+79.46 ± 5.69
+81.35 ± 6.56
+syn-graph-5
+70.54 ± 6.99
+80.00 ± 5.16
+85.13 ± 4.72
+85.67 ± 6.40
+87.30 ± 5.14
+syn-hypergraph-5
+70.54 ± 6.99
+75.95 ± 6.22
+81.62 ± 4.95
+84.32 ± 4.65
+87.30 ± 4.53
+syn-graph-6
+70.54 ± 6.99
+81.08 ± 4.68
+87.84 ± 5.57
+88.38 ± 6.40
+89.73 ± 4.80
+syn-hypergraph-6
+70.54 ± 6.99
+79.46 ± 5.57
+84.05 ± 5.73
+87.30 ± 5.41
+89.19 ± 4.19
+syn-graph-7
+70.54 ± 6.99
+84.32 ± 4.80
+89.46 ± 5.73
+90.81 ± 5.82
+90.27 ± 5.30
+syn-hypergraph-7
+70.54 ± 6.99
+80.81 ± 4.90
+85.95 ± 5.90
+89.46 ± 5.33
+89.73 ± 3.38
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0
+76.22 ± 5.51
+76.22 ± 5.90
+78.11 ± 6.45
+77.84 ± 5.38
+79.73 ± 7.18
+82.43 ± 6.19
+72.97 ± 5.80
+74.32 ± 5.30
+76.49 ± 6.17
+76.22 ± 5.24
+78.65 ± 5.85
+79.46 ± 6.30
+84.59 ± 6.63
+84.32 ± 4.49
+83.24 ± 6.14
+85.13 ± 6.19
+86.49 ± 4.19
+87.03 ± 5.51
+83.51 ± 6.67
+85.13 ± 4.40
+84.05 ± 6.67
+86.49 ± 5.27
+87.03 ± 6.26
+87.57 ± 4.39
+88.92 ± 4.59
+87.30 ± 5.68
+87.03 ± 4.95
+88.11 ± 6.30
+88.38 ± 5.80
+89.73 ± 5.10
+88.92 ± 4.75
+87.57 ± 4.22
+87.30 ± 4.02
+89.73 ± 3.15
+90.54 ± 3.68
+91.89 ± 2.69
+89.73 ± 4.80
+90.00 ± 5.55
+88.92 ± 5.47
+89.20 ± 5.27
+89.73 ± 5.90
+91.08 ± 6.05
+90.54 ± 3.68
+91.35 ± 3.78
+90.81 ± 2.76
+90.54 ± 2.77
+90.00 ± 2.72
+91.89 ± 3.20
+91.08 ± 5.28
+90.81 ± 5.16
+90.62 ± 5.60
+90.27 ± 6.19
+90.81 ± 5.16
+91.62 ± 5.60
+90.27 ± 3.24
+91.35 ± 3.59
+92.16 ± 3.07
+91.35 ± 2.91
+91.35 ± 2.36
+92.97 ± 4.39
+the hidden dimension of 64. Results in Fig. H.4(b)(c) show that our
+framework performs better on hypergraphs than graphs with the same
+high homophily and performs better on graphs than hypergraphs with
+the same low homophily, which are also reflected in Table H.8.
+References
+[1] M. Zou, Z. Gan, R. Cao, C. Guan, S. Leng, Similarity-navigated graph neural
+networks for node classification, Inform. Sci. 633 (2023) 41–69.
+[2] X. Qiu, L. Yang, C. Guan, S. Leng, Closed-loop control of higher-order complex
+networks: Finite-time and pinning strategies, Chaos Solitons Fractals 173 (2023)
+113677.
+[3] E.
+Bairey,
+E.D.
+Kelsic,
+R.
+Kishony,
+High-order
+species
+interactions
+shape
+ecosystem diversity, Nature Commun. 7 (1) (2016) 12285.
+[4] G. Petri, P. Expert, F. Turkheimer, R. Carhart-Harris, D. Nutt, P.J. Hellyer,
+F. Vaccarino, Homological scaffolds of brain functional networks, J. R. Soc.
+Interface 11 (101) (2014) 20140873.
+[5] T.N. Kipf, M. Welling, Semi-supervised classification with graph convolutional
+networks, in: International Conference on Learning Representations (ICLR), 2017.
+[6] H. Chen, L. Li, F. Hu, F. Lyu, L. Zhao, K. Huang, W. Feng, Z. Xia, Multi-semantic
+hypergraph neural network for effective few-shot learning, Pattern Recognit. 142
+(2023) 109677.
+[7] G. Zhang, Z. Hu, G. Wen, J. Ma, X. Zhu, Dynamic graph convolutional networks
+by semi-supervised contrastive learning, Pattern Recognit. 139 (2023) 109486.
+[8] S. Bai, F. Zhang, P.H. Torr, Hypergraph convolution and hypergraph attention,
+Pattern Recognit. 110 (2021) 107637.
+[9] C. Cui, X. Li, C. Zhang, W. Guan, M. Wang, Temporal-relational hypergraph
+tri-attention networks for stock trend prediction, Pattern Recognit. 143 (2023)
+109759.
+[10] J.Y. Zien, M.D. Schlag, P.K. Chan, Multilevel spectral hypergraph partitioning
+with arbitrary vertex sizes, IEEE Trans. Comput.-aided Des. Integr. Circuits Syst.
+18 (9) (1999) 1389–1399.
+[11] L. Sun, S. Ji, J. Ye, Hypergraph spectral learning for multi-label classification, in:
+Proceedings of the 14th ACM SIGKDD International Conference on Knowledge
+Discovery and Data Mining, 2008, pp. 668–676.
+[12] P. Wang, S. Yang, Y. Liu, Z. Wang, P. Li, Equivariant hypergraph diffusion neural
+operators, in: International Conference on Learning Representations (ICLR), 2023.
+[13] W. Hamilton, Z. Ying, J. Leskovec, Inductive representation learning on large
+graphs, Adv. Neural Inf. Process. Syst. 30 (2017).
+[14] C. Yang, R. Wang, S. Yao, T. Abdelzaher, Semi-supervised hypergraph node
+classification on hypergraph line expansion, in: Proceedings of the 31st ACM
+International Conference on Information & Knowledge Management, 2022, pp.
+2352–2361.
+[15] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A.N. Gomez, Ł. Kaiser,
+I. Polosukhin, Attention is all you need, Adv. Neural Inf. Process. Syst. 30 (2017).
+[16] M. Chen, Z. Wei, Z. Huang, B. Ding, Y. Li, Simple and deep graph convolutional
+networks, in: International Conference on Machine Learning, PMLR, 2020, pp.
+1725–1735.
+[17] N. Yadati, M. Nimishakavi, P. Yadav, V. Nitin, A. Louis, P. Talukdar, Hypergcn:
+A new method for training graph convolutional networks on hypergraphs, Adv.
+Neural Inf. Process. Syst. 32 (2019).
+[18] J. Gilmer, S.S. Schoenholz, P.F. Riley, O. Vinyals, G.E. Dahl, Neural message pass-
+ing for quantum chemistry, in: International Conference on Machine Learning,
+PMLR, 2017, pp. 1263–1272.
+[19] P. Velickovic, G. Cucurull, A. Casanova, A. Romero, P. Lio, Y. Bengio, Graph
+attention networks, in: International Conference on Learning Representations
+(ICLR), Vol. 1050, 2018, p. 20.
+[20] J. Zhu, Y. Yan, L. Zhao, M. Heimann, L. Akoglu, D. Koutra, Beyond homophily
+in graph neural networks: Current limitations and effective designs, Adv. Neural
+Inf. Process. Syst. 33 (2020) 7793–7804.
+[21] Y. Yan, M. Hashemi, K. Swersky, Y. Yang, D. Koutra, Two sides of the same
+coin: Heterophily and oversmoothing in graph convolutional neural networks,
+in: 2022 IEEE International Conference on Data Mining (ICDM), IEEE, 2022, pp.
+1287–1292.
+[22] X. Li, R. Zhu, Y. Cheng, C. Shan, S. Luo, D. Li, W. Qian, Finding global homophily
+in graph neural networks when meeting heterophily, in: International Conference
+on Machine Learning, PMLR, 2022, pp. 13242–13256.
+[23] Y. Feng, H. You, Z. Zhang, R. Ji, Y. Gao, Hypergraph neural networks, in:
+Proceedings of the AAAI Conference on Artificial Intelligence, Vol. 33, 2019,
+pp. 3558–3565.
+[24] E. Chien, C. Pan, J. Peng, O. Milenkovic, You are allset: A multiset function
+framework for hypergraph neural networks, in: International Conference on
+Learning Representations (ICLR), 2022.
+[25] J. Huang, J. Yang, Unignn: a unified framework for graph and hypergraph neural
+networks, in: International Joint Conference on Artificial Intelligence, 2021.
+[26] S. Suresh, V. Budde, J. Neville, P. Li, J. Ma, Breaking the limit of graph neural
+networks by improving the assortativity of graphs with local mixing patterns,
+in: Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery
+& Data Mining, 2021, pp. 1541–1551.
+[27] D. Lim, F. Hohne, X. Li, S.L. Huang, V. Gupta, O. Bhalerao, S.N. Lim, Large
+scale learning on non-homophilous graphs: New benchmarks and strong simple
+methods, Adv. Neural Inf. Process. Syst. 34 (2021) 20887–20902.
+[28] Y. Dong, W. Sawin, Y. Bengio, Hnhn: Hypergraph networks with hyperedge
+neurons, 2020, arXiv preprint arXiv:2006.12278.
+[29] C. Yang, Z. Liu, D. Zhao, M. Sun, E.Y. Chang, Network representation learning
+with rich text information, in: Proceedings of the 24th International Conference
+on Artificial Intelligence, 2015, pp. 2111–2117.
+[30] X. Huang, J. Li, X. Hu, Accelerated attributed network embedding, in: Proceed-
+ings of the 2017 SIAM International Conference on Data Mining, SIAM, 2017,
+pp. 633–641.
+[31] H. Pei, B. Wei, K.C.-C. Chang, Y. Lei, B. Yang, Geom-GCN: Geometric graph
+convolutional networks, in: International Conference on Learning Representations
+(ICLR), 2020.
+[32] D. Dua, C. Graff, UCI machine learning repository, 2017, URL http://archive.ics.
+uci.edu/ml.
+[33] Z. Wu, S. Song, A. Khosla, F. Yu, L. Zhang, X. Tang, J. Xiao, 3D shapenets: A deep
+representation for volumetric shapes, in: Proceedings of the IEEE Conference on
+Computer Vision and Pattern Recognition, 2015, pp. 1912–1920.
+[34] D.-Y. Chen, X.-P. Tian, Y.-T. Shen, M. Ouhyoung, On visual similarity based 3D
+model retrieval, in: Computer Graphics Forum, Vol. 22, Wiley Online Library,
+2003, pp. 223–232.
+[35] Y. Feng, Z. Zhang, X. Zhao, R. Ji, Y. Gao, Gvcnn: Group-view convolutional
+neural networks for 3d shape recognition, in: Proceedings of the IEEE Conference
+on Computer Vision and Pattern Recognition, 2018, pp. 264–272.
+
+
+===== PAGE 10 =====
+Pattern Recognition 147 (2024) 110115
+10
+M. Zou et al.
+[36] H. Su, S. Maji, E. Kalogerakis, E. Learned-Miller, Multi-view convolutional neural
+networks for 3d shape recognition, in: Proceedings of the IEEE International
+Conference on Computer Vision, 2015, pp. 945–953.
+[37] J.H. Fowler, Legislative cosponsorship networks in the US house and senate,
+Social Networks 28 (4) (2006) 454–465.
+[38] D.P. Kingma, J. Ba, Adam: A method for stochastic optimization, in: International
+Conference on Learning Representations (ICLR), 2015.
+[39] T. Akiba, S. Sano, T. Yanase, T. Ohta, M. Koyama, Optuna: A next-generation
+hyperparameter optimization framework, in: Proceedings of the 25th ACM
+SIGKDD International Conference on Knowledge Discovery and Data Mining,
+2019, pp. 2623–2631.
+Minhao Zou received the M.S. degree from Fudan Univer-
+sity, Shanghai, China, in 2022. He is currently working
+towards the Ph. D. degree with the Institute of AI and
+Robotics, Academy for Engineering and Technology, Fudan
+University, Shanghai, China. His research interests include
+graph and hypergraph neural network, object detection,
+federated learning.
+Zhongxue Gan received the Ph.D. degree in mechanical en-
+gineering from the University of Connecticut in 1993. He is
+currently the Dean of the Institute of AI and Robotics, Fudan
+University. He has published more than 40 papers and three
+books. His research interests include the underlying theory
+and critical technology of swarm intelligence, autonomous
+intelligent robot, and flexible automatic control.
+Yutong Wang received the B.S. degree from Guangzhou
+University, Guangzhou, China, in 2022. She is currently
+working towards the M.S. degree with the Institute of AI and
+Robotics, Academy for Engineering and Technology, Fudan
+University, Shanghai, China. Her research interests include
+graph and hypergraph neural network, complex networks,
+deep learning.
+Junheng Zhang received the B.E. degree from Nanjing
+Forestry University, Nanjing, China, in 2021. He is currently
+working towards the M.E.I. degree with the Institute of AI
+and Robotics, Academy for Engineering and Technology,
+Fudan University, Shanghai, China. His research interests
+include graph and hypergraph neural network, complex
+networks, deep learning.
+Dongyan Sui received the B.S. degree from Fudan Uni-
+versity, Shanghai, China, in 2020. He is currently working
+towards the Ph.D. degree with the Institute of AI and
+Robotics, Academy for Engineering and Technology, Fudan
+University, Shanghai, China. His research interests include
+statistical inference, decision and control theory, network
+science.
+Chun Guan received the Ph.D. degree in Computer Science
+and Software Engineering from University of Liverpool,
+Liverpool, UK, in 2018. She is currently a Postdoctoral Re-
+search Fellow at the Institute of AI and Robotics, Academy
+for Engineering and Technology, Fudan University, Shang-
+hai, China. Her research interests include neural networks,
+complex networks, artificial intelligence.
+Siyang Leng received the Ph.D. degree in Applied Mathe-
+matics from Fudan University, Shanghai, China, in 2016.
+He
+is
+currently
+a
+Principal
+Investigator
+at
+the
+Insti-
+tute of AI and Robotics, Academy for Engineering and
+Technology, and Research Institute of Intelligent Complex
+Systems, Fudan University, Shanghai, China. His research
+interests include nonlinear dynamics, complex networks,
+artificial intelligence, and their intersections with applied
+mathematics.
