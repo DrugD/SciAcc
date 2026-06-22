@@ -3,6 +3,10 @@
 Papers/*
 !Papers/README.md
 !Papers/.gitkeep
+# Case study papers (3 selected)
+!Papers/HypergraphFoundationModel.pdf
+!Papers/Hypergraph Computation.pdf
+!Papers/Mathematical Foundations of Hypergraph.pdf
 
 # ===== Secrets =====
 Backend/.env
